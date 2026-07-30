@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p \"/c/Users/luisa/OneDrive/Escritorio/BI_Tools/UnusedElementsFinder/js\")",
+      "Bash(mkdir -p \"/c/Users/luisa/AppData/Local/Temp/claude/c--Users-luisa-OneDrive-Escritorio-BI-Tools/2a5062f9-4d43-4a90-9824-09242f2bf683/scratchpad\")",
+      "Bash(node test-analyzer.js)",
+      "PowerShell(node --version)",
+      "PowerShell($found = Get-Command node -ErrorAction SilentlyContinue; if \\($found\\) { $found.Source } else { Get-ChildItem -Path \"C:\\\\Program Files\",\"C:\\\\Program Files \\(x86\\)\",\"$env:LOCALAPPDATA\",\"$env:USERPROFILE\" -Recurse -Filter \"node.exe\" -ErrorAction SilentlyContinue -Force | Select-Object -First 5 -ExpandProperty FullName })",
+      "Bash(command -v powershell.exe)",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Microsoft/Edge/Application//**)",
+      "Read(//c/Program Files/Microsoft/Edge/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\luisa\\OneDrive\\Escritorio\\BI_Tools\\UnusedElementsFinder",
+      "C:\\Users\\luisa\\AppData\\Local\\Temp\\claude\\c--Users-luisa-OneDrive-Escritorio-BI-Tools\\2a5062f9-4d43-4a90-9824-09242f2bf683\\scratchpad"
+    ]
+  }
+}

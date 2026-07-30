@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscador de Elementos No Usados — Power BI</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Buscador de Elementos No Usados</h1>
+    <p>
+      Analiza un modelo semántico y un reporte de Power BI (formato PBIP: carpetas
+      <strong>.SemanticModel</strong> y <strong>.Report</strong>) para detectar medidas,
+      columnas y columnas calculadas que no se están usando en ningún visual, filtro,
+      relación o jerarquía — y qué elementos sólo se mantienen "vivos" por culpa de otros
+      elementos que tampoco se usan.
+    </p>
+    <button id="helpToggle" class="link-btn">Cómo usar esta herramienta ▾</button>
+    <div id="helpPanel">
+      <h3>Cómo usar esta herramienta</h3>
+      <ol>
+        <li>Abrí tu proyecto PBIP en el explorador de archivos de Windows. Vas a ver dos carpetas: una que termina en <code>.SemanticModel</code> y otra en <code>.Report</code>.</li>
+        <li>Hacé clic en "Elegir carpeta .SemanticModel" y seleccioná esa carpeta completa (no entres a subcarpetas).</li>
+        <li>Hacé clic en "Elegir carpeta .Report" y seleccioná esa carpeta completa.</li>
+        <li>Cuando ambas queden marcadas con ✓, hacé clic en "Analizar".</li>
+        <li>Revisá las dos tablas de resultados. Podés exportarlas a CSV para llevarlas a Excel.</li>
+      </ol>
+      <p><strong>Nota:</strong> todo el análisis corre en tu navegador, en tu propia computadora — ningún archivo se envía a ningún servidor.</p>
+      <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Todavía no evalúa roles de seguridad (RLS), grupos de cálculo, ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="picker-grid">
+      <div class="picker-card">
+        <h3>1. Carpeta .SemanticModel</h3>
+        <p class="hint">La carpeta que contiene <code>definition/tables/*.tmdl</code></p>
+        <label class="file-btn">
+          Elegir carpeta .SemanticModel
+          <input type="file" id="semanticModelPicker" webkitdirectory directory multiple>
+        </label>
+        <div id="semanticModelStatus" class="status-line"></div>
+      </div>
+      <div class="picker-card">
+        <h3>2. Carpeta .Report</h3>
+        <p class="hint">La carpeta que contiene <code>definition/pages/...</code></p>
+        <label class="file-btn">
+          Elegir carpeta .Report
+          <input type="file" id="reportPicker" webkitdirectory directory multiple>
+        </label>
+        <div id="reportStatus" class="status-line"></div>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button id="analyzeBtn" class="primary-btn" disabled>Analizar</button>
+      <div id="analyzeSpinner" class="spinner"></div>
+    </div>
+    <div id="analysisError" class="error-box"></div>
+  </section>
+
+  <div id="resultsPanel">
+
+    <section class="panel">
+      <div class="stats-row" id="summaryStats"></div>
+    </section>
+
+    <section class="panel results-section">
+      <div class="section-header">
+        <h2>Elementos que no se usan</h2>
+        <span><strong id="section1Count">0</strong> elemento(s)</span>
+      </div>
+      <p class="section-desc">
+        No aparecen en ningún visual, filtro, bookmark, relación ni jerarquía, y ninguna
+        otra medida o columna calculada los referencia. Son los candidatos más seguros para eliminar.
+      </p>
+      <div class="toolbar">
+        <input type="text" id="section1Search" placeholder="Buscar por tabla, nombre o carpeta...">
+        <select id="section1KindFilter">
+          <option value="all">Todos los tipos</option>
+          <option value="measure">Medidas</option>
+          <option value="column">Columnas</option>
+          <option value="calculatedColumn">Columnas calculadas</option>
+        </select>
+        <button id="section1ExportBtn" class="secondary-btn">Exportar CSV</button>
+      </div>
+      <div class="table-scroll">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Tabla</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Oculto</th>
+              <th>Carpeta</th>
+              <th>DAX</th>
+            </tr>
+          </thead>
+          <tbody id="section1Body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel results-section">
+      <div class="section-header">
+        <h2>Elementos referenciados en elementos que no se usan</h2>
+        <span><strong id="section2Count">0</strong> elemento(s)</span>
+      </div>
+      <p class="section-desc">
+        Tampoco están usados en visuales, filtros, relaciones ni jerarquías — pero sí son
+        llamados desde otra medida/columna calculada, y esa que los llama está, a su vez,
+        sin uso real. Si limpiás la sección anterior, es probable que estos también queden libres.
+      </p>
+      <div class="toolbar">
+        <input type="text" id="section2Search" placeholder="Buscar por tabla, nombre o carpeta...">
+        <select id="section2KindFilter">
+          <option value="all">Todos los tipos</option>
+          <option value="measure">Medidas</option>
+          <option value="column">Columnas</option>
+          <option value="calculatedColumn">Columnas calculadas</option>
+        </select>
+        <button id="section2ExportBtn" class="secondary-btn">Exportar CSV</button>
+      </div>
+      <div class="table-scroll">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Tabla</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Oculto</th>
+              <th>Carpeta</th>
+              <th>Referenciado por</th>
+              <th>DAX</th>
+            </tr>
+          </thead>
+          <tbody id="section2Body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="note">
+      Buscador de Elementos No Usados — análisis local, basado en lectura de texto de archivos TMDL y JSON del formato PBIP.
+    </footer>
+  </div>
+
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/tmdl-parser.js"></script>
+<script src="js/model-builder.js"></script>
+<script src="js/dax-references.js"></script>
+<script src="js/report-scanner.js"></script>
+<script src="js/folder-reader.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
