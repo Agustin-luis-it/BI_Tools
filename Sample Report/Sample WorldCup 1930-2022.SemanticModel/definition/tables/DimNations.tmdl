@@ -1,0 +1,90 @@
+table DimNations
+	lineageTag: 5d003aac-db2a-4726-8231-345a87e257a1
+
+	column nation_id
+		dataType: int64
+		formatString: 0
+		lineageTag: fdc80647-eaa8-4f7d-96c4-f05718e6ce9e
+		summarizeBy: none
+		sourceColumn: nation_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column nation_name
+		dataType: string
+		lineageTag: a52b9bb3-0a33-4eea-b25a-b1eddc881dd9
+		summarizeBy: none
+		sourceColumn: nation_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column photo_url
+		dataType: string
+		lineageTag: 247a33fa-05c2-4a77-8b2d-a33525178a26
+		summarizeBy: none
+		sourceColumn: photo_url
+
+		annotation SummarizationSetBy = Automatic
+
+	column player_name
+		dataType: string
+		lineageTag: 67d36763-68cd-4fc3-9ca2-c6e6022e9ad5
+		summarizeBy: none
+		sourceColumn: player_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column player_position
+		dataType: string
+		lineageTag: ff8d702d-9248-4883-b69e-78a690335f0a
+		summarizeBy: none
+		sourceColumn: player_position
+
+		annotation SummarizationSetBy = Automatic
+
+	column player_photo_url
+		dataType: string
+		lineageTag: 8110d376-abbb-47fa-b585-d4eff83f8d83
+		dataCategory: ImageUrl
+		summarizeBy: none
+		sourceColumn: player_photo_url
+
+		annotation SummarizationSetBy = Automatic
+
+	column confederation
+		dataType: string
+		lineageTag: 44544af2-43f6-415b-a6d0-25e625f2f350
+		summarizeBy: none
+		sourceColumn: confederation
+
+		annotation SummarizationSetBy = Automatic
+
+	column flag_url
+		dataType: string
+		lineageTag: 0a767d49-d905-4769-8e6c-20cec81e2cb8
+		summarizeBy: none
+		sourceColumn: flag_url
+
+		annotation SummarizationSetBy = Automatic
+
+	column continent
+		dataType: string
+		lineageTag: 94960272-2559-449a-a148-a10818e52203
+		summarizeBy: none
+		sourceColumn: continent
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimNations = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\luisa\Downloads\World_Cup_Model.xlsx"), null, true),
+				    DimNations_Sheet = Source{[Item="DimNations",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(DimNations_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"nation_id", Int64.Type}, {"nation_name", type text}, {"photo_url", type any}, {"player_name", type any}, {"player_position", type any}, {"player_photo_url", type any}, {"confederation", type any}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

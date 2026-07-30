@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Sample WorldCup 1930-2022"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a2f42296-ebf1-45e7-8ffa-a161a0aa3b14"
+  }
+}

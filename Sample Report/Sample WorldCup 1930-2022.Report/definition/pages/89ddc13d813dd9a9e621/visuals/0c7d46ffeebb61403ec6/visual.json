@@ -1,0 +1,144 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "0c7d46ffeebb61403ec6",
+  "position": {
+    "x": 216.56872037914692,
+    "y": 329.40284360189577,
+    "z": 0,
+    "height": 660.62559241706163,
+    "width": 433.13744075829385,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMatch"
+                    }
+                  },
+                  "Property": "score_normalized"
+                }
+              },
+              "queryRef": "FactMatch.score_normalized",
+              "nativeQueryRef": "score_normalized"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure"
+                    }
+                  },
+                  "Property": "Score Occurrences"
+                }
+              },
+              "queryRef": "Measure.Score Occurrences",
+              "nativeQueryRef": "Score Occurrences"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure"
+                    }
+                  },
+                  "Property": "Score Occurrences %"
+                }
+              },
+              "queryRef": "Measure.Score Occurrences %",
+              "nativeQueryRef": "Score Occurrences %"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Measure"
+                  }
+                },
+                "Property": "Score Occurrences"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "05aa126e80bb64eb6178",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "FactMatch"
+              }
+            },
+            "Property": "score_normalized"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "046eec307319842bcd2d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Measure"
+              }
+            },
+            "Property": "Score Occurrences"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "ed46e705d60a459c5094",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Measure"
+              }
+            },
+            "Property": "Score Occurrences %"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

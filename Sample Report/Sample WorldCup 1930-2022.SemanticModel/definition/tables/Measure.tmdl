@@ -1,0 +1,975 @@
+table Measure
+	lineageTag: 633a8dd3-e2da-4632-acac-46560afe2e6d
+
+	measure selected_nation_player = MAX(DimNations[player_photo_url])
+		displayFolder: _design
+		lineageTag: 2c34d7c1-e871-409b-8767-ad16bfbe21f3
+
+	/// Color representativo del país seleccionado — paleta refinada estilo PL
+	measure nation_color =
+			VAR _nation = SELECTEDVALUE(DimNations[nation_name])
+			RETURN
+			SWITCH(
+			    _nation,
+			    -- South America
+			    "Argentina",           "#43A1D5",
+			    "Brazil",              "#009A44",
+			    "Uruguay",             "#5BA4CF",
+			    "Colombia",            "#F5C518",
+			    "Chile",               "#C0392B",
+			    "Peru",                "#C0392B",
+			    "Ecuador",             "#F0C030",
+			    "Paraguay",            "#D63031",
+			    "Bolivia",             "#F39C12",
+			    -- Europe
+			    "France",              "#1A3A6B",
+			    "Germany",             "#C0392B",
+			    "Spain",               "#9B1C1C",
+			    "England",             "#C8102E",
+			    "Italy",               "#003E8A",
+			    "Netherlands",         "#E55A00",
+			    "Portugal",            "#006600",
+			    "Belgium",             "#D62828",
+			    "Croatia",             "#CC3333",
+			    "Sweden",              "#005B99",
+			    "Denmark",             "#B22222",
+			    "Switzerland",         "#CC0000",
+			    "Poland",              "#C41E3A",
+			    "Hungary",             "#A52B2B",
+			    "Czechoslovakia",      "#C0392B",
+			    "Yugoslavia",          "#1A4A8A",
+			    "Austria",             "#CC2233",
+			    "Scotland",            "#1A3A6B",
+			    "Wales",               "#A8002B",
+			    "Northern Ireland",    "#1A4070",
+			    "Republic of Ireland", "#1A7A3C",
+			    "Turkey",              "#C8102E",
+			    "Türkiye",             "#C8102E",
+			    "Serbia",              "#AA2030",
+			    "Russia",              "#CC2020",
+			    "Soviet Union",        "#AA0000",
+			    "Ukraine",             "#005BA8",
+			    "Romania",             "#002B7F",
+			    "Bulgaria",            "#00784A",
+			    "Greece",              "#1A5EA8",
+			    "Czech Republic",      "#C8102E",
+			    "Slovakia",            "#0B4EA2",
+			    "Slovenia",            "#1A4A8A",
+			    "Norway",              "#C8102E",
+			    "Albania",             "#CC1111",
+			    -- Africa
+			    "Senegal",             "#1A7A3C",
+			    "Morocco",             "#AA1111",
+			    "Nigeria",             "#00753A",
+			    "Ghana",               "#1A6B3C",
+			    "Cameroon",            "#006A44",
+			    "Ivory Coast",         "#E07010",
+			    "Côte d'Ivoire",       "#E07010",
+			    "Egypt",               "#AA1A1A",
+			    "Tunisia",             "#CC0022",
+			    "Algeria",             "#006233",
+			    "South Africa",        "#007A4D",
+			    "Togo",                "#006A4E",
+			    "Angola",              "#AA0000",
+			    "Zaire",               "#1A6AAA",
+			    -- Asia
+			    "Japan",               "#AA0022",
+			    "South Korea",         "#AA2233",
+			    "Iran",                "#1A7A3C",
+			    "Saudi Arabia",        "#00602A",
+			    "Australia",           "#003882",
+			    -- CONCACAF
+			    "USA",                 "#B22234",
+			    "Mexico",              "#006847",
+			    "Costa Rica",          "#1A2D7A",
+			    "Honduras",            "#0063A4",
+			    "Jamaica",             "#F5A800",
+			    "Cuba",                "#002B8F",
+			    "Canada",              "#CC1111",
+			    -- Middle East
+			    "Qatar",               "#6B1530",
+			    "Indonesia",           "#CC1111",
+			    "North Korea",         "#024FA2",
+			    -- Default
+			    "#6C757D"
+			)
+		displayFolder: _design
+		lineageTag: 19f2817c-d780-4090-9d15-0a074f2a4630
+
+	measure 'Avr Goals Scored' =
+			VAR _matches = COUNTROWS(FactMatchTeam)
+			RETURN
+			    IF(
+			        _matches = 0 || ISBLANK(_matches),
+			        BLANK(),
+			        DIVIDE(SUM(FactMatchTeam[goals_scored]), _matches)
+			    )
+		formatString: 0.00
+		displayFolder: _statistics
+		lineageTag: 0530494f-0b5a-4a20-8181-6f9aee82814b
+
+	measure 'Avr Goals Conceded' =
+			VAR _matches = COUNTROWS(FactMatchTeam)
+			RETURN
+			    IF(
+			        _matches = 0 || ISBLANK(_matches),
+			        BLANK(),
+			        DIVIDE(SUM(FactMatchTeam[goals_conceded]), _matches)
+			    )
+		formatString: 0.00
+		displayFolder: _statistics
+		lineageTag: 20940d39-30d3-466f-bc6f-8b92cb8d1b95
+
+	measure 'Avr Match Goals' =
+			VAR _matches = COUNTROWS(FactMatchTeam)
+			RETURN
+			    IF(
+			        _matches = 0 || ISBLANK(_matches),
+			        BLANK(),
+			        DIVIDE(
+			            SUM(FactMatchTeam[goals_scored]) + SUM(FactMatchTeam[goals_conceded]),
+			            _matches
+			        )
+			    )
+		formatString: 0.00
+		displayFolder: _statistics
+		lineageTag: 1f0b8344-4179-48e1-a7b1-54abbff53ab8
+
+	measure 'Win Rate' =
+			VAR _W = CALCULATE(COUNTROWS(FactMatchTeam), FactMatchTeam[result] = "W")
+			VAR _matches = COUNTROWS(FactMatchTeam)
+			RETURN DIVIDE(_W, _matches)
+		formatString: 0.0%
+		displayFolder: _statistics
+		lineageTag: 99770b78-452e-4635-9666-576322365512
+
+	measure 'Total Goals Scored' = SUM(FactMatchTeam[goals_scored])
+		formatString: 0
+		displayFolder: _statistics
+		lineageTag: 8d44bcc0-13c8-4110-9add-010e12424eb9
+
+	measure 'Total Goals Conceded' = SUM(FactMatchTeam[goals_conceded])
+		formatString: 0
+		displayFolder: _statistics
+		lineageTag: ef20fcd7-7164-40f8-b6f9-7254bb28d3ae
+
+	measure 'Matches Played' = COUNTROWS(FactMatchTeam)
+		formatString: 0
+		displayFolder: _statistics
+		lineageTag: dc02f6f6-a105-47a3-acae-0ed6aeea548c
+
+	measure Participations =
+			CALCULATE(
+			    DISTINCTCOUNT(FactMatchTeam[year])
+			)
+		formatString: 0
+		displayFolder: _information
+		lineageTag: 354ec9b5-3b3a-4b7b-a8d6-5511bbfd843b
+
+	measure 'Last Participation' =
+			CALCULATE(
+			    MAX(FactMatchTeam[year])
+			)
+		formatString: 0
+		displayFolder: _information
+		lineageTag: 306f2805-5ef0-413e-bec4-dc2c5ebaa4c6
+
+	measure 'Avr Goals Scored Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _matches = CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			VAR _goals = CALCULATE(SUM(FactMatchTeam[goals_scored]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			RETURN DIVIDE(_goals, _matches)
+		formatString: 0.00
+		displayFolder: _statistics_aux
+		lineageTag: 56a1d66d-e37e-45fe-bceb-2c35ac1e1fec
+
+	measure 'Avr Goals Conceded Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _matches = CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			VAR _goals = CALCULATE(SUM(FactMatchTeam[goals_conceded]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			RETURN DIVIDE(_goals, _matches)
+		formatString: 0.00
+		displayFolder: _statistics_aux
+		lineageTag: bf79c53f-d348-427c-968c-7e9eff371fa2
+
+	measure 'Avr Match Goals Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _matches = CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			VAR _scored = CALCULATE(SUM(FactMatchTeam[goals_scored]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			VAR _conceded = CALCULATE(SUM(FactMatchTeam[goals_conceded]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			RETURN DIVIDE(_scored + _conceded, _matches)
+		formatString: 0.00
+		displayFolder: _statistics_aux
+		lineageTag: aee22ad8-ffae-4815-85b5-92e32904a763
+
+	measure 'Win Rate Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _W = CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected, FactMatchTeam[result] = "W")
+			VAR _matches = CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+			RETURN DIVIDE(_W, _matches)
+		formatString: 0.0%
+		displayFolder: _statistics_aux
+		lineageTag: 500decf2-9166-4c06-9604-08de4be9aca8
+
+	measure 'Total Goals Scored Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN CALCULATE(SUM(FactMatchTeam[goals_scored]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+		formatString: 0
+		displayFolder: _statistics_aux
+		lineageTag: f959733c-7cad-4d65-95a9-ea4ebd8f4506
+
+	measure 'Total Goals Conceded Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN CALCULATE(SUM(FactMatchTeam[goals_conceded]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+		formatString: 0
+		displayFolder: _statistics_aux
+		lineageTag: 3e6223c6-54d4-4a48-9fc4-023d244793b5
+
+	measure 'Matches Played Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+		formatString: 0
+		displayFolder: _statistics_aux
+		lineageTag: a1d377e9-5799-43f8-9e3a-da756d7b00bd
+
+	measure 'Participations Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN CALCULATE(DISTINCTCOUNT(FactMatchTeam[year]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+		formatString: 0
+		displayFolder: _information_aux
+		lineageTag: 6e52b631-0fa7-4fa5-8596-9520f3268553
+
+	measure 'Last Participation Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN CALCULATE(MAX(FactMatchTeam[year]), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected)
+		formatString: 0
+		displayFolder: _information_aux
+		lineageTag: 87be1b53-0c26-4047-9184-f93f1b7abb67
+
+	measure 'nation_color Aux' =
+			VAR _nation = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			SWITCH(
+			    _nation,
+			    "Argentina",           "#43A1D5",
+			    "Brazil",              "#009A44",
+			    "Uruguay",             "#5BA4CF",
+			    "Colombia",            "#F5C518",
+			    "Chile",               "#C0392B",
+			    "Peru",                "#C0392B",
+			    "Ecuador",             "#F0C030",
+			    "Paraguay",            "#D63031",
+			    "Bolivia",             "#F39C12",
+			    "France",              "#1A3A6B",
+			    "Germany",             "#C0392B",
+			    "Spain",               "#9B1C1C",
+			    "England",             "#C8102E",
+			    "Italy",               "#003E8A",
+			    "Netherlands",         "#E55A00",
+			    "Portugal",            "#006600",
+			    "Belgium",             "#D62828",
+			    "Croatia",             "#CC3333",
+			    "Sweden",              "#005B99",
+			    "Denmark",             "#B22222",
+			    "Switzerland",         "#CC0000",
+			    "Poland",              "#C41E3A",
+			    "Hungary",             "#A52B2B",
+			    "Czechoslovakia",      "#C0392B",
+			    "Yugoslavia",          "#1A4A8A",
+			    "Austria",             "#CC2233",
+			    "Scotland",            "#1A3A6B",
+			    "Wales",               "#A8002B",
+			    "Northern Ireland",    "#1A4070",
+			    "Republic of Ireland", "#1A7A3C",
+			    "Turkey",              "#C8102E",
+			    "Türkiye",             "#C8102E",
+			    "Serbia",              "#AA2030",
+			    "Russia",              "#CC2020",
+			    "Soviet Union",        "#AA0000",
+			    "Ukraine",             "#005BA8",
+			    "Romania",             "#002B7F",
+			    "Bulgaria",            "#00784A",
+			    "Greece",              "#1A5EA8",
+			    "Czech Republic",      "#C8102E",
+			    "Slovakia",            "#0B4EA2",
+			    "Slovenia",            "#1A4A8A",
+			    "Norway",              "#C8102E",
+			    "Albania",             "#CC1111",
+			    "Senegal",             "#1A7A3C",
+			    "Morocco",             "#AA1111",
+			    "Nigeria",             "#00753A",
+			    "Ghana",               "#1A6B3C",
+			    "Cameroon",            "#006A44",
+			    "Ivory Coast",         "#E07010",
+			    "Côte d'Ivoire",       "#E07010",
+			    "Egypt",               "#AA1A1A",
+			    "Tunisia",             "#CC0022",
+			    "Algeria",             "#006233",
+			    "South Africa",        "#007A4D",
+			    "Togo",                "#006A4E",
+			    "Angola",              "#AA0000",
+			    "Zaire",               "#1A6AAA",
+			    "Japan",               "#AA0022",
+			    "South Korea",         "#AA2233",
+			    "Iran",                "#1A7A3C",
+			    "Saudi Arabia",        "#00602A",
+			    "Australia",           "#003882",
+			    "USA",                 "#B22234",
+			    "Mexico",              "#006847",
+			    "Costa Rica",          "#1A2D7A",
+			    "Honduras",            "#0063A4",
+			    "Jamaica",             "#F5A800",
+			    "Cuba",                "#002B8F",
+			    "Canada",              "#CC1111",
+			    "Qatar",               "#6B1530",
+			    "Indonesia",           "#CC1111",
+			    "North Korea",         "#024FA2",
+			    "#6C757D"
+			)
+		displayFolder: _design
+		lineageTag: 9cccc7ab-275e-409e-8b0b-dabee295bc3e
+
+	measure 'selected_nation_player Aux' = ```
+			
+			    CALCULATE(MAX(DimNations[player_photo_url]),
+			        REMOVEFILTERS(DimNations),  
+			        DimNations[nation_name] = SELECTEDVALUE(DimNationsAux[nation_name])
+			    )
+			```
+		displayFolder: _design
+		lineageTag: 8d1ab7e6-f35b-4c8a-8605-37bb0dfd97d5
+
+	measure Record =
+			VAR _W = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), FactMatchTeam[result] = "W"), 0)
+			VAR _D = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), FactMatchTeam[result] = "D"), 0)
+			VAR _L = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), FactMatchTeam[result] = "L"), 0)
+			RETURN
+			    IF(
+			        _W = 0 && _D = 0 && _L = 0,
+			        BLANK(),
+			        FORMAT(_W, "0") & " - " & FORMAT(_D, "0") & " - " & FORMAT(_L, "0")
+			    )
+		displayFolder: _statistics
+		lineageTag: bb683830-22f9-4beb-93ed-44a43e336ca8
+
+	measure 'Record Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _W = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected, FactMatchTeam[result] = "W"), 0)
+			VAR _D = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected, FactMatchTeam[result] = "D"), 0)
+			VAR _L = COALESCE(CALCULATE(COUNTROWS(FactMatchTeam), REMOVEFILTERS(DimNations), DimNations[nation_name] = _selected, FactMatchTeam[result] = "L"), 0)
+			RETURN
+			    IF(
+			        ISBLANK(_selected),
+			        BLANK(),
+			        FORMAT(_W, "0") & " - " & FORMAT(_D, "0") & " - " & FORMAT(_L, "0")
+			    )
+		displayFolder: _statistics_aux
+		lineageTag: 34d02be6-77a9-4dd9-b633-8c74f47130b8
+
+	measure _best_result_color =
+			VAR _a = [_best_round_order]
+			VAR _b = [_best_round_order_aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a < _b, "#2ECC71",
+			        _a > _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 71826928-7f20-44f7-9678-d6d3141cd88b
+
+	measure _best_result_color_aux =
+			VAR _a = [_best_round_order_aux]
+			VAR _b = [_best_round_order]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a < _b, "#2ECC71",
+			        _a > _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 21d2d603-b5f7-44dd-8191-0e3b80e510c2
+
+	measure _avr_goals_scored_color =
+			VAR _a = [Avr Goals Scored]
+			VAR _b = [Avr Goals Scored Aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 31616f86-5ec6-4f3c-a7ed-fe6074c6cd08
+
+	measure _avr_goals_scored_color_aux =
+			VAR _a = [Avr Goals Scored Aux]
+			VAR _b = [Avr Goals Scored]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 45f29b66-e5c9-4a9e-815f-631a59cac48b
+
+	measure _avr_goals_conceded_color =
+			VAR _a = [Avr Goals Conceded]
+			VAR _b = [Avr Goals Conceded Aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a < _b, "#2ECC71",
+			        _a > _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 3263a93f-e07c-4b1b-a403-7ba6242a92d8
+
+	measure _avr_goals_conceded_color_aux =
+			VAR _a = [Avr Goals Conceded Aux]
+			VAR _b = [Avr Goals Conceded]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a < _b, "#2ECC71",
+			        _a > _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 0b7909dd-89d6-432a-98fb-8ed953dffc32
+
+	measure _avr_match_goals_color =
+			VAR _a = [Avr Match Goals]
+			VAR _b = [Avr Match Goals Aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 4672737f-f2f3-4dcd-9be4-2680837600e8
+
+	measure _avr_match_goals_color_aux =
+			VAR _a = [Avr Match Goals Aux]
+			VAR _b = [Avr Match Goals]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 0a62445c-d2b6-4136-8409-d1f141fa6aad
+
+	measure _matches_played_color =
+			VAR _a = [Matches Played]
+			VAR _b = [Matches Played Aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 141baf40-05b8-4c52-9a36-1813885d3409
+
+	measure _matches_played_color_aux =
+			VAR _a = [Matches Played Aux]
+			VAR _b = [Matches Played]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: ef95e7d4-0060-490e-a152-97e82a287cd0
+
+	measure _best_round_order =
+			VAR _won_final =
+			    CALCULATE(
+			        COUNTROWS(FactMatchTeam),
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			VAR _rounds =
+			    CALCULATETABLE(
+			        SUMMARIZE(FactMatchTeam, FactMatchTeam[round])
+			    )
+			VAR _with_order =
+			    ADDCOLUMNS(
+			        _rounds,
+			        "order",
+			        SWITCH(
+			            [round],
+			            "Final",                IF(_won_final > 0, 0, 1),
+			            "Third place",          2,
+			            "Semi-finals",          3,
+			            "Quarter-finals",       4,
+			            "Round of 16",          5,
+			            "Second round",         5,
+			            "Second group stage",   5,
+			            "First group stage",    6,
+			            "First round",          6,
+			            "Group stage",          6,
+			            99
+			        )
+			    )
+			RETURN MINX(_with_order, [order])
+		isHidden
+		displayFolder: _information
+		lineageTag: 367eeeeb-42e8-4788-9bc3-5902f2d43830
+
+	measure _best_round_order_aux =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _won_final =
+			    CALCULATE(
+			        COUNTROWS(FactMatchTeam),
+			        REMOVEFILTERS(DimNations),
+			        DimNations[nation_name] = _selected,
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			VAR _rounds =
+			    CALCULATETABLE(
+			        SUMMARIZE(FactMatchTeam, FactMatchTeam[round]),
+			        REMOVEFILTERS(DimNations),
+			        DimNations[nation_name] = _selected
+			    )
+			VAR _with_order =
+			    ADDCOLUMNS(
+			        _rounds,
+			        "order",
+			        SWITCH(
+			            [round],
+			            "Final",                IF(_won_final > 0, 0, 1),
+			            "Third place",          2,
+			            "Semi-finals",          3,
+			            "Quarter-finals",       4,
+			            "Round of 16",          5,
+			            "Second round",         5,
+			            "Second group stage",   5,
+			            "First group stage",    6,
+			            "First round",          6,
+			            "Group stage",          6,
+			            99
+			        )
+			    )
+			RETURN MINX(_with_order, [order])
+		isHidden
+		displayFolder: _information_aux
+		lineageTag: b0addfb6-cc7e-4aed-80fb-7725d8a059ef
+
+	measure 'Best Result' =
+			VAR _ord = [_best_round_order]
+			VAR _won_final =
+			    CALCULATE(
+			        COUNTROWS(FactMatchTeam),
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        _ord = 0, "Winner",
+			        _ord = 1, "Finalist",
+			        _ord = 2, "3rd Place",
+			        _ord = 3, "Semi-finals",
+			        _ord = 4, "Quarter-finals",
+			        _ord = 5, "Round of 16",
+			        _ord = 6, "Group Stage",
+			        BLANK()
+			    )
+		displayFolder: _information
+		lineageTag: 9300d0af-1336-460d-934e-eca9d3f1317b
+
+	measure 'Best Result Aux' =
+			VAR _ord = [_best_round_order_aux]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        _ord = 0, "Winner",
+			        _ord = 1, "Finalist",
+			        _ord = 2, "3rd Place",
+			        _ord = 3, "Semi-finals",
+			        _ord = 4, "Quarter-finals",
+			        _ord = 5, "Round of 16",
+			        _ord = 6, "Group Stage",
+			        BLANK()
+			    )
+		displayFolder: _information_aux
+		lineageTag: 3e25e2a1-46f7-4db8-b6d0-80be9aa5e389
+
+	measure selected_nation_photo = MAX(DimNations[photo_url])
+		displayFolder: _design
+		lineageTag: 2596addf-955b-4b9f-97c5-b1c82e001884
+
+	measure 'selected_nation_photo Aux' = ```
+			
+			    CALCULATE(
+			        MAX(DimNations[photo_url]),
+			        REMOVEFILTERS(DimNations),  
+			        DimNations[nation_name] = SELECTEDVALUE(DimNationsAux[nation_name])
+			    )
+			```
+		displayFolder: _design
+		lineageTag: 78d90714-f62d-4a39-9965-d5866286d9f4
+
+	measure selected_nation_flag = MAX(DimNations[flag_url])
+		displayFolder: _design
+		lineageTag: 10cc04e1-3af0-474c-b14d-dcad341bbcec
+
+	measure 'selected_nation_flag Aux' = ```
+			
+			    CALCULATE(
+			        MAX(DimNations[flag_url]),
+			        REMOVEFILTERS(DimNations),  
+			        DimNations[nation_name] = SELECTEDVALUE(DimNationsAux[nation_name])
+			    )
+			```
+		displayFolder: _design
+		lineageTag: bf1a1425-e170-4d8e-9863-914883e787e7
+
+	measure _is_wc2026_team =
+			VAR _nation = SELECTEDVALUE(DimNations[nation_name])
+			VAR _wc2026 = {
+			    -- CONMEBOL
+			    "Argentina", "Brazil", "Colombia", "Ecuador", "Paraguay", "Uruguay",
+			    -- CONMEBOL playoff
+			    "Chile",
+			    -- UEFA
+			    "France", "Spain", "England", "Germany", "Portugal", "Netherlands",
+			    "Belgium", "Croatia", "Switzerland", "Poland", "Serbia",
+			    "Austria", "Scotland", "Hungary", "Türkiye",
+			    "Bosnia and Herzegovina", "Sweden",
+			    -- AFC
+			    "Japan", "Korea Republic", "IR Iran", "Australia", "Saudi Arabia",
+			    "Jordan", "Iraq",
+			    -- CAF
+			    "Morocco", "Algeria", "Egypt", "Ghana", "Tunisia",
+			    "Nigeria", "Senegal", "South Africa", "Cameroon",
+			    -- CAF/intercontinental playoff
+			    "Côte d'Ivoire",
+			    -- CONCACAF
+			    "United States", "Mexico", "Canada", "Panama", "Honduras",
+			    -- OFC
+			    "New Zealand"
+			}
+			RETURN IF(_nation IN _wc2026, 1, 0)
+		formatString: 0
+		isHidden
+		displayFolder: _design
+		lineageTag: 581a46ad-d5d0-4c14-a90d-db19951fee00
+
+	measure '_is_wc2026_team Aux' =
+			VAR _nation = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _wc2026 = {
+			    -- CONMEBOL
+			    "Argentina", "Brazil", "Colombia", "Ecuador", "Paraguay", "Uruguay",
+			    -- CONMEBOL playoff
+			    "Chile",
+			    -- UEFA
+			    "France", "Spain", "England", "Germany", "Portugal", "Netherlands",
+			    "Belgium", "Croatia", "Switzerland", "Poland", "Serbia",
+			    "Austria", "Scotland", "Hungary", "Türkiye",
+			    "Bosnia and Herzegovina",
+			    -- AFC
+			    "Japan", "Korea Republic", "IR Iran", "Australia", "Saudi Arabia",
+			    "Jordan", "Iraq",
+			    -- CAF
+			    "Morocco", "Algeria", "Egypt", "Ghana", "Tunisia",
+			    "Nigeria", "Senegal", "South Africa", "Cameroon",
+			    -- CAF/intercontinental playoff
+			    "Côte d'Ivoire",
+			    -- CONCACAF
+			    "United States", "Mexico", "Canada", "Panama", "Honduras",
+			    -- OFC
+			    "New Zealand"
+			}
+			RETURN IF(_nation IN _wc2026, 1, 0)
+		formatString: 0
+		displayFolder: _design
+		lineageTag: 2aa948ae-e0f6-4eef-bbe0-305d066ffff6
+
+	measure 'Champions Awarded' =
+			VAR _titles =
+			    CALCULATETABLE(
+			        VALUES(FactMatchTeam[year]),
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			VAR _count = COUNTROWS(_titles)
+			VAR _years =
+			    CONCATENATEX(
+			        TOPN(99, _titles, FactMatchTeam[year], ASC),
+			        FORMAT(FactMatchTeam[year], "0"),
+			        ", ",
+			        FactMatchTeam[year], ASC
+			    )
+			RETURN
+			    IF(
+			        _count = 0 || ISBLANK(_count),
+			        "0",
+			        FORMAT(_count, "0") & " (" & _years & ")"
+			    )
+		displayFolder: _information
+		lineageTag: e08ac640-63d3-4359-be59-5f70cf297605
+
+	measure 'Champions Awarded Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _titles =
+			    CALCULATETABLE(
+			        VALUES(FactMatchTeam[year]),
+			        REMOVEFILTERS(DimNations),
+			        DimNations[nation_name] = _selected,
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			VAR _count = COUNTROWS(_titles)
+			VAR _years =
+			    CONCATENATEX(
+			        TOPN(99, _titles, FactMatchTeam[year], ASC),
+			        FORMAT(FactMatchTeam[year], "0"),
+			        ", ",
+			        FactMatchTeam[year], ASC
+			    )
+			RETURN
+			    IF(
+			        ISBLANK(_selected),
+			        BLANK(),
+			        IF(
+			            _count = 0 || ISBLANK(_count),
+			            "0",
+			            FORMAT(_count, "0") & " (" & _years & ")"
+			        )
+			    )
+		displayFolder: _information_aux
+		lineageTag: 5ab96fc1-83b9-4c1e-86d4-ed31c8cc682f
+
+	measure 'Confederation Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			    CALCULATE(
+			        MAX(DimNations[confederation]),
+			        REMOVEFILTERS(DimNations),
+			        DimNations[nation_name] = _selected
+			    )
+		displayFolder: _information_aux
+		lineageTag: 7e253f4a-85fa-4806-8550-1c77d05c5124
+
+	measure _win_rate_color =
+			VAR _a = [Win Rate]
+			VAR _b = [Win Rate Aux]
+			VAR _selected_aux = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_selected_aux), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: e13ee88e-4dd3-4cd6-9e42-0f92d3f07ba4
+
+	measure _win_rate_color_aux =
+			VAR _a = [Win Rate Aux]
+			VAR _b = [Win Rate]
+			VAR _selected_aux = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_b) || ISBLANK(_selected_aux), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 38e9d30d-886a-4589-b903-8aaf5f9ede23
+
+	measure _record_color =
+			VAR _a = [Win Rate]
+			VAR _b = [Win Rate Aux]
+			VAR _selected_aux = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_a) || ISBLANK(_selected_aux), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 6f8b32b7-e3b0-41e2-96e4-8deec0312a5d
+
+	measure _record_color_aux =
+			VAR _a = [Win Rate Aux]
+			VAR _b = [Win Rate]
+			VAR _selected_aux = SELECTEDVALUE(DimNationsAux[nation_name])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(_b) || ISBLANK(_selected_aux), "#F39C12",
+			        _a > _b, "#2ECC71",
+			        _a < _b, "#E74C3C",
+			        "#F39C12"
+			    )
+		isHidden
+		displayFolder: _temperature
+		lineageTag: 76dd4e1d-653e-4c91-a274-6205260b8db1
+
+	measure 'Trophy Icons' =
+			VAR _count =
+			    CALCULATE(
+			        COUNTROWS(FactMatchTeam),
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			RETURN IF(_count > 0, REPT("🏆", _count), "")
+		displayFolder: _design
+		lineageTag: 9508634a-bc3b-42e5-b4de-dc19d66e7881
+
+	measure 'Trophy Icons Aux' =
+			VAR _selected = SELECTEDVALUE(DimNationsAux[nation_name])
+			VAR _count =
+			    CALCULATE(
+			        COUNTROWS(FactMatchTeam),
+			        REMOVEFILTERS(DimNations),
+			        DimNations[nation_name] = _selected,
+			        FactMatchTeam[round] = "Final",
+			        FactMatchTeam[result] = "W"
+			    )
+			RETURN
+			    IF(
+			        ISBLANK(_selected),
+			        BLANK(),
+			        IF(_count > 0, REPT("🏆", _count), "")
+			    )
+		displayFolder: _design
+		lineageTag: fc2ce2b1-efdf-4d06-bfbb-d2fd5d5deb03
+
+	measure 'Total Matches' = COUNTROWS(FactMatch)
+		formatString: 0
+		displayFolder: _world_cup_metrics
+		lineageTag: 648ee8fa-fb9d-400f-a0bf-e7dfe99a0e40
+
+	measure 'Score Occurrences' =
+			VAR _selected_score = SELECTEDVALUE(FactMatch[score_normalized])
+			RETURN
+			    CALCULATE(
+			        COUNTROWS(FactMatch),
+			        FactMatch[score_normalized] = _selected_score
+			    )
+		formatString: 0
+		displayFolder: _world_cup_metrics
+		lineageTag: 8b17ab30-7980-47e8-9fdd-db0add3ed7fc
+
+	measure 'Matches With Zero' =
+			VAR _matches_with_zero =
+			    CALCULATE(
+			        COUNTROWS(FactMatch),
+			        FactMatch[home_score] = 0 || FactMatch[away_score] = 0
+			    )
+			VAR _total = COUNTROWS(FactMatch)
+			RETURN _matches_with_zero
+		formatString: 0
+		displayFolder: _world_cup_metrics
+		lineageTag: d968e8c0-660f-40c3-bca4-2c4466a8bced
+
+	measure 'Matches With Zero %' =
+			VAR _matches_with_zero =
+			    CALCULATE(
+			        COUNTROWS(FactMatch),
+			        FactMatch[home_score] = 0 || FactMatch[away_score] = 0
+			    )
+			VAR _total = COUNTROWS(FactMatch)
+			RETURN DIVIDE(_matches_with_zero, _total)
+		formatString: 0.0%
+		displayFolder: _world_cup_metrics
+		lineageTag: d5065732-11a1-43fd-add6-1a19361fa606
+
+	measure 'Score Occurrences %' =
+			VAR _count = COUNTROWS(FactMatch)
+			VAR _total = CALCULATE(COUNTROWS(FactMatch), ALL(FactMatch[score_normalized]))
+			RETURN DIVIDE(_count, _total)
+		formatString: 0.0%
+		displayFolder: _world_cup_metrics
+		lineageTag: f40b9ece-d14b-4853-af33-47b45609043c
+
+	measure 'Matches With Zero (Label)' =
+			VAR _count =
+			    CALCULATE(
+			        COUNTROWS(FactMatch),
+			        FactMatch[home_score] = 0 || FactMatch[away_score] = 0
+			    )
+			VAR _total = CALCULATE(COUNTROWS(FactMatch), ALL(FactMatch[score_normalized]))
+			VAR _pct = DIVIDE(_count, _total)
+			RETURN
+			    FORMAT(_count, "0") & " (" & FORMAT(_pct, "0.0%") & ")"
+		displayFolder: _world_cup_metrics
+		lineageTag: 1928efde-61b4-4508-8ada-71b30702f5c8
+
+	measure 'Matches With Draw (Label)' =
+			VAR _count =
+			    CALCULATE(
+			        COUNTROWS(FactMatch),
+			        FactMatch[home_score] = FactMatch[away_score]
+			    )
+			VAR _total = CALCULATE(COUNTROWS(FactMatch), ALL(FactMatch[score_normalized]))
+			VAR _pct = DIVIDE(_count, _total)
+			RETURN
+			    FORMAT(_count, "0") & " (" & FORMAT(_pct, "0.0%") & ")"
+		displayFolder: _world_cup_metrics
+
+	measure 'Avr Goals Per Match (Label)' =
+			VAR _total_goals = SUM(FactMatch[home_score]) + SUM(FactMatch[away_score])
+			VAR _matches = COUNTROWS(FactMatch)
+			VAR _avg = DIVIDE(_total_goals, _matches)
+			RETURN FORMAT(_avg, "0.00")
+		displayFolder: _world_cup_metrics
+
+	column _
+		isHidden
+		lineageTag: 6142f916-1957-4c71-82bd-3124b2cd6c47
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [_]
+
+	partition Measure = calculated
+		mode: import
+		source = DATATABLE("_", STRING, {{""}})
+

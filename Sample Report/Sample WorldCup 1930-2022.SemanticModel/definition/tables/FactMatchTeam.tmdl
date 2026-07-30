@@ -1,0 +1,111 @@
+table FactMatchTeam
+	lineageTag: 2431482a-027a-4b4a-9c45-4e5898f04695
+
+	column match_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 17dcef47-e5d9-4968-a12e-b6aca9c717ec
+		summarizeBy: none
+		sourceColumn: match_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 62c709ae-fd60-4770-a929-7adc0392aaf3
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column round
+		dataType: string
+		lineageTag: 318373d2-4614-4c2e-a280-87a810bfbcc7
+		summarizeBy: none
+		sourceColumn: round
+
+		annotation SummarizationSetBy = Automatic
+
+	column team
+		dataType: string
+		lineageTag: 1d10487d-fa3b-498e-86ad-ce63f229d2bd
+		summarizeBy: none
+		sourceColumn: team
+
+		annotation SummarizationSetBy = Automatic
+
+	column opponent
+		dataType: string
+		lineageTag: 01203b03-4e9b-4445-a63f-dd0ef247879f
+		summarizeBy: none
+		sourceColumn: opponent
+
+		annotation SummarizationSetBy = Automatic
+
+	column goals_scored
+		dataType: int64
+		formatString: 0
+		lineageTag: 55a725e6-7a49-42aa-b180-33a3089e0292
+		summarizeBy: none
+		sourceColumn: goals_scored
+
+		annotation SummarizationSetBy = Automatic
+
+	column goals_conceded
+		dataType: int64
+		formatString: 0
+		lineageTag: 8197e7a8-b47d-4317-858a-555af5cfe39f
+		summarizeBy: none
+		sourceColumn: goals_conceded
+
+		annotation SummarizationSetBy = Automatic
+
+	column penalties_scored
+		dataType: int64
+		formatString: 0
+		lineageTag: cdb6cdff-2975-4b02-8250-95564f75d28c
+		summarizeBy: none
+		sourceColumn: penalties_scored
+
+		annotation SummarizationSetBy = Automatic
+
+	column penalties_conceded
+		dataType: int64
+		formatString: 0
+		lineageTag: a44f337c-845d-4fc4-9305-946f05cbddb0
+		summarizeBy: none
+		sourceColumn: penalties_conceded
+
+		annotation SummarizationSetBy = Automatic
+
+	column result
+		dataType: string
+		lineageTag: 264183b8-25d4-45a2-9f90-063baa7c4bb3
+		summarizeBy: none
+		sourceColumn: result
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_home
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c6cca5f-06ae-4310-8046-dcd0ef9eaf60
+		summarizeBy: none
+		sourceColumn: is_home
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactMatchTeam = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\luisa\Downloads\World_Cup_Model.xlsx"), null, true),
+				    FactMatchTeam_Sheet = Source{[Item="FactMatchTeam",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactMatchTeam_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"match_id", Int64.Type}, {"year", Int64.Type}, {"round", type text}, {"team", type text}, {"opponent", type text}, {"goals_scored", Int64.Type}, {"goals_conceded", Int64.Type}, {"penalties_scored", Int64.Type}, {"penalties_conceded", Int64.Type}, {"result", type text}, {"is_home", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,8 @@
+relationship FactMatchTeam_team_DimNations_nation_name
+	fromColumn: FactMatchTeam.team
+	toColumn: DimNations.nation_name
+
+relationship FactMatchTeam_match_id_FactMatch_match_id
+	fromColumn: FactMatchTeam.match_id
+	toColumn: FactMatch.match_id
+

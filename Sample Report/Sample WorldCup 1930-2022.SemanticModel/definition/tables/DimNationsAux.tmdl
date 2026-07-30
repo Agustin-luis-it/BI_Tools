@@ -1,0 +1,13 @@
+table DimNationsAux
+	lineageTag: 3cff443b-07cb-4322-9e54-64be5362df39
+
+	column nation_name
+		lineageTag: 4382e4d7-9d59-405c-b0db-bea3feaa44eb
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [nation_name]
+
+	partition DimNationsAux = calculated
+		mode: import
+		source = SELECTCOLUMNS(DimNations, "nation_name", DimNations[nation_name])
+

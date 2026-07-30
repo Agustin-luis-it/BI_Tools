@@ -1,0 +1,149 @@
+table FactMatch
+	lineageTag: 8b022f71-150c-4526-bca4-080b1654adfa
+
+	column match_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 939ee249-f5ab-4cc0-89e0-3f3fa56de692
+		summarizeBy: none
+		sourceColumn: match_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: int64
+		formatString: 0
+		lineageTag: 9a54b642-9933-4b1b-a6b0-930893eeb353
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: c606d474-51cb-4721-ab7b-6fa9652c5c2f
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column round
+		dataType: string
+		lineageTag: 37486740-6127-41ef-ab85-90cef907e4e6
+		summarizeBy: none
+		sourceColumn: round
+
+		annotation SummarizationSetBy = Automatic
+
+	column host
+		dataType: string
+		lineageTag: 73cd97f3-3297-482b-984b-eec5080c1fde
+		summarizeBy: none
+		sourceColumn: host
+
+		annotation SummarizationSetBy = Automatic
+
+	column home_team
+		dataType: string
+		lineageTag: 4a0e4672-3951-4ab9-a44a-1809bf359dab
+		summarizeBy: none
+		sourceColumn: home_team
+
+		annotation SummarizationSetBy = Automatic
+
+	column away_team
+		dataType: string
+		lineageTag: f54cc6c7-90bf-447b-8254-c026d7cb9304
+		summarizeBy: none
+		sourceColumn: away_team
+
+		annotation SummarizationSetBy = Automatic
+
+	column home_score
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c8d9b15-776b-4294-a16d-76f97a05ff33
+		summarizeBy: none
+		sourceColumn: home_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column away_score
+		dataType: int64
+		formatString: 0
+		lineageTag: dae2750c-e917-4733-b092-8cd73f829d72
+		summarizeBy: none
+		sourceColumn: away_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column home_penalty
+		dataType: int64
+		formatString: 0
+		lineageTag: 75a242d7-ca85-4986-bfdb-ffb935510737
+		summarizeBy: none
+		sourceColumn: home_penalty
+
+		annotation SummarizationSetBy = Automatic
+
+	column away_penalty
+		dataType: int64
+		formatString: 0
+		lineageTag: a16b90bd-2e92-477c-80e4-328c3b6a927e
+		summarizeBy: none
+		sourceColumn: away_penalty
+
+		annotation SummarizationSetBy = Automatic
+
+	column score_text
+		dataType: string
+		lineageTag: 65baa0b3-8246-4372-ac38-2c9039f7e42b
+		summarizeBy: none
+		sourceColumn: score_text
+
+		annotation SummarizationSetBy = Automatic
+
+	column notes
+		dataType: string
+		lineageTag: 976566d8-9dbe-49aa-acc6-056966cd40a9
+		summarizeBy: none
+		sourceColumn: notes
+
+		annotation SummarizationSetBy = Automatic
+
+	column attendance
+		dataType: int64
+		formatString: 0
+		lineageTag: 23f9ffd9-bf6b-4a1a-b87e-6da76eae0f3f
+		summarizeBy: none
+		sourceColumn: attendance
+
+		annotation SummarizationSetBy = Automatic
+
+	column score_normalized =
+			VAR _h = FactMatch[home_score]
+			VAR _a = FactMatch[away_score]
+			RETURN
+			    IF(
+			        _h >= _a,
+			        FORMAT(_h, "0") & " - " & FORMAT(_a, "0"),
+			        FORMAT(_a, "0") & " - " & FORMAT(_h, "0")
+			    )
+		dataType: string
+		lineageTag: 5f64fbb2-04a7-45ce-891a-69adb2c0f0d5
+		summarizeBy: none
+
+	partition FactMatch = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\luisa\Downloads\World_Cup_Model.xlsx"), null, true),
+				    FactMatch_Sheet = Source{[Item="FactMatch",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(FactMatch_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"match_id", Int64.Type}, {"date", Int64.Type}, {"year", Int64.Type}, {"round", type text}, {"host", type text}, {"home_team", type text}, {"away_team", type text}, {"home_score", Int64.Type}, {"away_score", Int64.Type}, {"home_penalty", Int64.Type}, {"away_penalty", Int64.Type}, {"score_text", type text}, {"notes", type text}, {"attendance", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
