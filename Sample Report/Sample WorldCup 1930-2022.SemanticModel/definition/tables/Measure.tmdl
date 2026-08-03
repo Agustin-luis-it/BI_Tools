@@ -456,36 +456,6 @@ table Measure
 		displayFolder: _temperature
 		lineageTag: 0b7909dd-89d6-432a-98fb-8ed953dffc32
 
-	measure _avr_match_goals_color =
-			VAR _a = [Avr Match Goals]
-			VAR _b = [Avr Match Goals Aux]
-			RETURN
-			    SWITCH(
-			        TRUE(),
-			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
-			        _a > _b, "#2ECC71",
-			        _a < _b, "#E74C3C",
-			        "#F39C12"
-			    )
-		isHidden
-		displayFolder: _temperature
-		lineageTag: 4672737f-f2f3-4dcd-9be4-2680837600e8
-
-	measure _avr_match_goals_color_aux =
-			VAR _a = [Avr Match Goals Aux]
-			VAR _b = [Avr Match Goals]
-			RETURN
-			    SWITCH(
-			        TRUE(),
-			        ISBLANK(_a) || ISBLANK(_b), "#F39C12",
-			        _a > _b, "#2ECC71",
-			        _a < _b, "#E74C3C",
-			        "#F39C12"
-			    )
-		isHidden
-		displayFolder: _temperature
-		lineageTag: 0a62445c-d2b6-4136-8409-d1f141fa6aad
-
 	measure _matches_played_color =
 			VAR _a = [Matches Played]
 			VAR _b = [Matches Played Aux]
@@ -954,6 +924,7 @@ table Measure
 			RETURN
 			    FORMAT(_count, "0") & " (" & FORMAT(_pct, "0.0%") & ")"
 		displayFolder: _world_cup_metrics
+		lineageTag: b5779f26-005b-4ad7-a702-de358f04288a
 
 	measure 'Avr Goals Per Match (Label)' =
 			VAR _total_goals = SUM(FactMatch[home_score]) + SUM(FactMatch[away_score])
@@ -961,6 +932,15 @@ table Measure
 			VAR _avg = DIVIDE(_total_goals, _matches)
 			RETURN FORMAT(_avg, "0.00")
 		displayFolder: _world_cup_metrics
+		lineageTag: 7194423b-da22-4cf1-8ec5-0c2bef2700f5
+
+	measure 'Medida de prueba' = 1
+		formatString: 0
+		lineageTag: 64aa26ad-bd55-44b8-9113-f2150b0824a2
+
+	measure 'Medida de prueba 2' = [Medida de prueba] + 1
+		formatString: 0
+		lineageTag: a8308086-aa8b-4807-849d-2614b63636d8
 
 	column _
 		isHidden

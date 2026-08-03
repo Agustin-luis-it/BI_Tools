@@ -36,7 +36,8 @@ UEF.UI = (function () {
       if (kind === 'model') {
         semanticModelInput = UEF.FolderReader.readSemanticModelFolder(input.files);
         if (semanticModelInput.valid) {
-          setStatus(statusEl, true, `✓ "${semanticModelInput.rootName}" — ${semanticModelInput.tableFiles.length} tabla(s) encontrada(s)${semanticModelInput.relationshipsFile ? '' : ' (sin relationships.tmdl)'}`);
+          const rolesNote = semanticModelInput.roleFiles.length ? ` · ${semanticModelInput.roleFiles.length} rol(es) de seguridad (RLS)` : '';
+          setStatus(statusEl, true, `✓ "${semanticModelInput.rootName}" — ${semanticModelInput.tableFiles.length} tabla(s) encontrada(s)${semanticModelInput.relationshipsFile ? '' : ' (sin relationships.tmdl)'}${rolesNote}`);
         } else {
           setStatus(statusEl, false, `✗ "${semanticModelInput.rootName}" no parece una carpeta .SemanticModel válida (no se encontraron .tmdl en definition/tables).`);
         }

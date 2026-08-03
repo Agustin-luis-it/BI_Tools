@@ -119,6 +119,67 @@ UEF.TmdlParser = (function () {
     return { tableName, elements: rawElements, hierarchyColumnRefs };
   }
 
+  // Parsea un archivo de rol de seguridad: definition/roles/*.tmdl
+  // Extrae, por cada tablePermission, la tabla y la expresión DAX de filtro
+  // (para poder detectar qué columnas usa esa regla de RLS).
+  function parseRole(text) {
+    const lines = text.split(/\r?\n/);
+    let roleName = null;
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed === '') { i++; continue; }
+      if (indentOf(line) === 0 && /^role\s+/.test(trimmed)) {
+        roleName = unquoteName(trimmed.replace(/^role\s+/, ''));
+        i++;
+        break;
+      }
+      i++;
+    }
+
+    const tablePermissions = [];
+
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.trim() === '') { i++; continue; }
+      if (indentOf(line) !== 1) { i++; continue; }
+
+      const trimmed = line.trim();
+      const m = trimmed.match(/^tablePermission\s+(.*)$/);
+      if (!m) { i++; continue; }
+
+      const rest = m[1];
+      const eqIdx = rest.indexOf('=');
+      let namePart, exprStart;
+      if (eqIdx === -1) {
+        namePart = rest.trim();
+        exprStart = null;
+      } else {
+        namePart = rest.slice(0, eqIdx).trim();
+        exprStart = rest.slice(eqIdx + 1).trim();
+      }
+      const table = unquoteName(namePart);
+
+      let j = i + 1;
+      const exprLines = [];
+      if (exprStart) exprLines.push(exprStart);
+      while (j < lines.length) {
+        const l = lines[j];
+        if (l.trim() === '') { j++; continue; }
+        if (indentOf(l) <= 1) break;
+        exprLines.push(l.trim());
+        j++;
+      }
+
+      tablePermissions.push({ table, expression: exprLines.length ? exprLines.join('\n') : null });
+      i = j;
+    }
+
+    return { roleName, tablePermissions };
+  }
+
   // Parsea definition/relationships.tmdl
   function parseRelationships(text) {
     if (!text) return [];
@@ -143,5 +204,5 @@ UEF.TmdlParser = (function () {
     return rels;
   }
 
-  return { parseTable, parseRelationships };
+  return { parseTable, parseRelationships, parseRole };
 })();

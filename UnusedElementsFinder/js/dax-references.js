@@ -11,7 +11,11 @@ window.UEF = window.UEF || {};
 UEF.DaxReferences = (function () {
   const REF_RE = /(?:'((?:[^']|'')+)'|([\p{L}_][\p{L}\p{N}_]*))?\[([^\[\]]+)\]/gu;
 
-  function extractReferences(expression, model) {
+  // currentTable (opcional): tabla "propietaria" de la expresión (p. ej. la
+  // tabla de un tablePermission de RLS). Si se pasa, un campo sin calificar
+  // como [confederation] se intenta resolver primero como columna de esa
+  // tabla antes de asumir que es una medida — así funciona la sintaxis RLS.
+  function extractReferences(expression, model, currentTable) {
     const refs = new Set();
     if (!expression) return refs;
 
@@ -23,6 +27,13 @@ UEF.DaxReferences = (function () {
       if (qualifier) {
         const id = UEF.ModelBuilder.resolveColumn(model, qualifier, field);
         if (id) refs.add(id);
+      } else if (currentTable) {
+        const id = UEF.ModelBuilder.resolveTableColumn(model, currentTable, field);
+        if (id) refs.add(id);
+        else {
+          const measure = model.measuresByName.get(field);
+          if (measure) refs.add(measure.id);
+        }
       } else {
         const measure = model.measuresByName.get(field);
         if (measure) refs.add(measure.id);

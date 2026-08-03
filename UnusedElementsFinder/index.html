@@ -29,7 +29,7 @@
         <li>Revisá las dos tablas de resultados. Podés exportarlas a CSV para llevarlas a Excel.</li>
       </ol>
       <p><strong>Nota:</strong> todo el análisis corre en tu navegador, en tu propia computadora — ningún archivo se envía a ningún servidor.</p>
-      <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Todavía no evalúa roles de seguridad (RLS), grupos de cálculo, ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
+      <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Ya evalúa roles de seguridad (RLS) — una columna usada solo en una regla de RLS cuenta como "en uso" — pero todavía no contempla grupos de cálculo ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
     </div>
   </header>
 

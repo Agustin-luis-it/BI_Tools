@@ -13,11 +13,13 @@ UEF.FolderReader = (function () {
     const files = Array.from(fileList);
     const tableFiles = files.filter(f => /definition\/tables\/[^/]+\.tmdl$/i.test(relPath(f)));
     const relationshipsFile = files.find(f => /definition\/relationships\.tmdl$/i.test(relPath(f))) || null;
+    const roleFiles = files.filter(f => /definition\/roles\/[^/]+\.tmdl$/i.test(relPath(f)));
     const rootName = files.length ? relPath(files[0]).split('/')[0] : '';
     return {
       rootName,
       tableFiles,
       relationshipsFile,
+      roleFiles,
       valid: tableFiles.length > 0,
     };
   }

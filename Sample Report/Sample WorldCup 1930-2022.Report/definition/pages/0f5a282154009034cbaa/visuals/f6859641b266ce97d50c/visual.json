@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
   "name": "f6859641b266ce97d50c",
   "position": {
     "x": 1415.8199356913183,
@@ -75,7 +75,7 @@
                           [
                             {
                               "Literal": {
-                                "Value": "'Germany'"
+                                "Value": "'Japan'"
                               }
                             }
                           ]

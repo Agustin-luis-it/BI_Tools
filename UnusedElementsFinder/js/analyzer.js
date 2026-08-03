@@ -70,7 +70,22 @@ UEF.Analyzer = (function () {
       if (id) markUsed(id, 'Nivel de jerarquía');
     }
 
-    // 4) Cierre transitivo: todo lo que un elemento usado necesita (vía DAX
+    // 4) Uso en roles de seguridad (RLS): cada tablePermission es una
+    // expresión DAX de filtro sobre una tabla puntual; cualquier columna
+    // (o medida) que mencione cuenta como usada.
+    const roleTexts = await Promise.all((semanticModelInput.roleFiles || []).map(f => f.text()));
+    const roles = roleTexts.map(t => UEF.TmdlParser.parseRole(t));
+    for (const role of roles) {
+      for (const tp of role.tablePermissions) {
+        if (!tp.expression) continue;
+        const refs = UEF.DaxReferences.extractReferences(tp.expression, model, tp.table);
+        for (const id of refs) {
+          markUsed(id, `Rol de seguridad "${role.roleName}" (tabla "${tp.table}")`);
+        }
+      }
+    }
+
+    // 5) Cierre transitivo: todo lo que un elemento usado necesita (vía DAX
     // o sortByColumn) también se considera usado.
     const alive = new Set(usedDirect.keys());
     const queue = [...alive];
@@ -83,7 +98,7 @@ UEF.Analyzer = (function () {
       }
     }
 
-    // 5) Clasificación final
+    // 6) Clasificación final
     const section1 = [];
     const section2 = [];
     for (const el of model.elements) {

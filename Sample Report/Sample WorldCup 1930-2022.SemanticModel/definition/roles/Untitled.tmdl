@@ -1,0 +1,7 @@
+role Untitled
+	modelPermission: read
+
+	tablePermission DimNations = [confederation] == USERNAME()
+
+	annotation PBI_Id = 1eb1570559734ef78954e0dffdf3a471
+
