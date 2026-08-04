@@ -10,7 +10,19 @@
 <div class="wrap">
 
   <header>
-    <h1>Buscador de Elementos No Usados</h1>
+    <div class="brand-row">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="14" width="4" height="9" rx="1.2" fill="currentColor" opacity="0.55"/>
+          <rect x="11" y="8" width="4" height="15" rx="1.2" fill="currentColor" opacity="0.8"/>
+          <rect x="19" y="3" width="4" height="20" rx="1.2" fill="currentColor"/>
+          <circle cx="20.5" cy="5.5" r="4.2" fill="none" stroke="var(--panel-bg)" stroke-width="1.6"/>
+          <circle cx="20.5" cy="5.5" r="4.2" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.9"/>
+          <line x1="23.3" y1="8.3" x2="25.5" y2="10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <h1>Buscador de Elementos No Usados</h1>
+    </div>
     <p>
       Analiza un modelo semántico y un reporte de Power BI (formato PBIP: carpetas
       <strong>.SemanticModel</strong> y <strong>.Report</strong>) para detectar medidas,
@@ -18,6 +30,11 @@
       relación o jerarquía — y qué elementos sólo se mantienen "vivos" por culpa de otros
       elementos que tampoco se usan.
     </p>
+    <div class="badge-row">
+      <span class="badge">🔒 100% local</span>
+      <span class="badge">⚡ Sin instalación</span>
+      <span class="badge">📄 Exportable a CSV</span>
+    </div>
     <button id="helpToggle" class="link-btn">Cómo usar esta herramienta ▾</button>
     <div id="helpPanel">
       <h3>Cómo usar esta herramienta</h3>
@@ -27,8 +44,10 @@
         <li>Hacé clic en "Elegir carpeta .Report" y seleccioná esa carpeta completa.</li>
         <li>Cuando ambas queden marcadas con ✓, hacé clic en "Analizar".</li>
         <li>Revisá las dos tablas de resultados. Podés exportarlas a CSV para llevarlas a Excel.</li>
+        <li>En cualquiera de las dos secciones podés pasar a modo <strong>✏️ Editar</strong>, tildar los que quieras sacar del modelo y borrarlos directamente de los archivos <code>.tmdl</code>. El navegador te va a pedir permiso de escritura sobre la carpeta al elegirla — sin ese permiso, el botón "Editar" queda deshabilitado y la herramienta solo sirve para ver resultados.</li>
       </ol>
-      <p><strong>Nota:</strong> todo el análisis corre en tu navegador, en tu propia computadora — ningún archivo se envía a ningún servidor.</p>
+      <p><strong>Nota:</strong> todo el análisis corre en tu navegador, en tu propia computadora — ningún archivo se envía a ningún servidor. El borrado tampoco: escribe directamente sobre los archivos de la carpeta que elegiste.</p>
+      <p><strong>Sobre el borrado:</strong> si tildás un elemento de la segunda sección, la herramienta agrega automáticamente (sin que lo tildes) todo lo que lo referencia, para no dejar una fórmula rota en el elemento que lo llama — te lo muestra antes de confirmar. Después de cada borrado hay que volver a analizar antes de borrar de nuevo, para que la herramienta relea los archivos actualizados. Tené el proyecto en control de versiones (Git) por las dudas quieras deshacer algo.</p>
       <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Ya evalúa roles de seguridad (RLS) — una columna usada solo en una regla de RLS cuenta como "en uso" — pero todavía no contempla grupos de cálculo ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
     </div>
   </header>
@@ -36,19 +55,19 @@
   <section class="panel">
     <div class="picker-grid">
       <div class="picker-card">
-        <h3>1. Carpeta .SemanticModel</h3>
+        <span class="picker-step">1</span>
+        <h3>Carpeta .SemanticModel</h3>
         <p class="hint">La carpeta que contiene <code>definition/tables/*.tmdl</code></p>
-        <label class="file-btn">
-          Elegir carpeta .SemanticModel
-          <input type="file" id="semanticModelPicker" webkitdirectory directory multiple>
-        </label>
+        <button type="button" id="semanticModelPickerBtn" class="file-btn">📁 Elegir carpeta .SemanticModel</button>
+        <input type="file" id="semanticModelPickerFallback" webkitdirectory directory multiple style="display:none">
         <div id="semanticModelStatus" class="status-line"></div>
       </div>
       <div class="picker-card">
-        <h3>2. Carpeta .Report</h3>
+        <span class="picker-step">2</span>
+        <h3>Carpeta .Report</h3>
         <p class="hint">La carpeta que contiene <code>definition/pages/...</code></p>
         <label class="file-btn">
-          Elegir carpeta .Report
+          📁 Elegir carpeta .Report
           <input type="file" id="reportPicker" webkitdirectory directory multiple>
         </label>
         <div id="reportStatus" class="status-line"></div>
@@ -56,7 +75,7 @@
     </div>
 
     <div class="actions-row">
-      <button id="analyzeBtn" class="primary-btn" disabled>Analizar</button>
+      <button id="analyzeBtn" class="primary-btn" disabled>🔍 Analizar</button>
       <div id="analyzeSpinner" class="spinner"></div>
     </div>
     <div id="analysisError" class="error-box"></div>
@@ -70,13 +89,25 @@
 
     <section class="panel results-section">
       <div class="section-header">
-        <h2>Elementos que no se usan</h2>
-        <span><strong id="section1Count">0</strong> elemento(s)</span>
+        <h2><span class="section-icon">🧹</span> Elementos que no se usan</h2>
+        <span class="count-pill"><strong id="section1Count">0</strong> elemento(s)</span>
       </div>
       <p class="section-desc">
         No aparecen en ningún visual, filtro, bookmark, relación ni jerarquía, y ninguna
         otra medida o columna calculada los referencia. Son los candidatos más seguros para eliminar.
       </p>
+      <div class="mode-toggle-row">
+        <div class="mode-toggle" role="group" aria-label="Modo de la lista">
+          <button type="button" id="section1ViewModeBtn" class="mode-btn mode-btn-active">👁 Ver</button>
+          <button type="button" id="section1EditModeBtn" class="mode-btn" disabled title="Elegí la carpeta .SemanticModel con permiso de escritura para habilitar esto">✏️ Editar</button>
+        </div>
+        <span id="editModeHint" class="edit-mode-hint"></span>
+      </div>
+      <div id="section1DeleteBar" class="delete-bar" style="display:none">
+        <label class="select-all-label"><input type="checkbox" id="section1SelectAllCheckbox"> Seleccionar todo</label>
+        <button type="button" id="section1DeleteBtn" class="danger-btn" disabled>🗑 Eliminar seleccionados (<span id="section1SelectedCount">0</span>)</button>
+        <span id="section1DeleteStatus" class="status-line"></span>
+      </div>
       <div class="toolbar">
         <input type="text" id="section1Search" placeholder="Buscar por tabla, nombre o carpeta...">
         <select id="section1KindFilter">
@@ -85,12 +116,13 @@
           <option value="column">Columnas</option>
           <option value="calculatedColumn">Columnas calculadas</option>
         </select>
-        <button id="section1ExportBtn" class="secondary-btn">Exportar CSV</button>
+        <button id="section1ExportBtn" class="secondary-btn">⬇ Exportar CSV</button>
       </div>
       <div class="table-scroll">
         <table class="results-table">
           <thead>
             <tr>
+              <th id="section1CheckHeader" class="check-col" style="display:none"></th>
               <th>Tabla</th>
               <th>Nombre</th>
               <th>Tipo</th>
@@ -106,14 +138,26 @@
 
     <section class="panel results-section">
       <div class="section-header">
-        <h2>Elementos referenciados en elementos que no se usan</h2>
-        <span><strong id="section2Count">0</strong> elemento(s)</span>
+        <h2><span class="section-icon">🔗</span> Elementos referenciados en elementos que no se usan</h2>
+        <span class="count-pill"><strong id="section2Count">0</strong> elemento(s)</span>
       </div>
       <p class="section-desc">
         Tampoco están usados en visuales, filtros, relaciones ni jerarquías — pero sí son
         llamados desde otra medida/columna calculada, y esa que los llama está, a su vez,
         sin uso real. Si limpiás la sección anterior, es probable que estos también queden libres.
       </p>
+      <div class="mode-toggle-row">
+        <div class="mode-toggle" role="group" aria-label="Modo de la lista">
+          <button type="button" id="section2ViewModeBtn" class="mode-btn mode-btn-active">👁 Ver</button>
+          <button type="button" id="section2EditModeBtn" class="mode-btn" disabled title="Elegí la carpeta .SemanticModel con permiso de escritura para habilitar esto">✏️ Editar</button>
+        </div>
+        <span class="edit-mode-hint">Al borrar acá, se incluyen automáticamente los elementos que los referencian (para no dejar fórmulas rotas).</span>
+      </div>
+      <div id="section2DeleteBar" class="delete-bar" style="display:none">
+        <label class="select-all-label"><input type="checkbox" id="section2SelectAllCheckbox"> Seleccionar todo</label>
+        <button type="button" id="section2DeleteBtn" class="danger-btn" disabled>🗑 Eliminar seleccionados (<span id="section2SelectedCount">0</span>)</button>
+        <span id="section2DeleteStatus" class="status-line"></span>
+      </div>
       <div class="toolbar">
         <input type="text" id="section2Search" placeholder="Buscar por tabla, nombre o carpeta...">
         <select id="section2KindFilter">
@@ -122,12 +166,13 @@
           <option value="column">Columnas</option>
           <option value="calculatedColumn">Columnas calculadas</option>
         </select>
-        <button id="section2ExportBtn" class="secondary-btn">Exportar CSV</button>
+        <button id="section2ExportBtn" class="secondary-btn">⬇ Exportar CSV</button>
       </div>
       <div class="table-scroll">
         <table class="results-table">
           <thead>
             <tr>
+              <th id="section2CheckHeader" class="check-col" style="display:none"></th>
               <th>Tabla</th>
               <th>Nombre</th>
               <th>Tipo</th>
@@ -155,6 +200,7 @@
 <script src="js/dax-references.js"></script>
 <script src="js/report-scanner.js"></script>
 <script src="js/folder-reader.js"></script>
+<script src="js/tmdl-writer.js"></script>
 <script src="js/analyzer.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>

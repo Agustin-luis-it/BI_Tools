@@ -78,24 +78,6 @@ table FactMatch
 
 		annotation SummarizationSetBy = Automatic
 
-	column home_penalty
-		dataType: int64
-		formatString: 0
-		lineageTag: 75a242d7-ca85-4986-bfdb-ffb935510737
-		summarizeBy: none
-		sourceColumn: home_penalty
-
-		annotation SummarizationSetBy = Automatic
-
-	column away_penalty
-		dataType: int64
-		formatString: 0
-		lineageTag: a16b90bd-2e92-477c-80e4-328c3b6a927e
-		summarizeBy: none
-		sourceColumn: away_penalty
-
-		annotation SummarizationSetBy = Automatic
-
 	column score_text
 		dataType: string
 		lineageTag: 65baa0b3-8246-4372-ac38-2c9039f7e42b

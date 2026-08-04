@@ -4,7 +4,10 @@ window.UEF = window.UEF || {};
 
 UEF.ModelBuilder = (function () {
 
-  function build(parsedTables, relationships) {
+  // sourceByTable (opcional): Map(nombreTabla -> {file, relativePath, rawText})
+  // con el archivo .tmdl original de cada tabla — permite ubicar y borrar el
+  // bloque de texto exacto de un elemento más adelante (modo edición).
+  function build(parsedTables, relationships, sourceByTable) {
     const elements = [];
     const columnsByTable = new Map();   // tabla -> Map(nombreColumna -> elemento)
     const measuresByTable = new Map();  // tabla -> Map(nombreMedida -> elemento)
@@ -31,6 +34,8 @@ UEF.ModelBuilder = (function () {
           displayFolder: el.displayFolder,
           dataType: el.dataType,
           sortByColumn: el.sortByColumn,
+          startLine: el.startLine,
+          endLine: el.endLine,
         };
         elements.push(element);
         elementsById.set(id, element);
@@ -56,6 +61,7 @@ UEF.ModelBuilder = (function () {
       measuresByName,
       relationships: relationships || [],
       hierarchyUsage,
+      tableSources: sourceByTable || new Map(),
     };
   }
 

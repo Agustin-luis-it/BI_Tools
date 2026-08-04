@@ -104,6 +104,12 @@ UEF.TmdlParser = (function () {
           dataType: props.dataType || '',
           sourceColumn: props.sourceColumn || '',
           sortByColumn: props.sortByColumn ? unquoteName(props.sortByColumn) : null,
+          // Rango de líneas (índices en el texto original, 0-based, inclusive)
+          // que ocupa este elemento — incluye separadores en blanco previos al
+          // siguiente miembro. Sirve para poder borrar el bloque del archivo
+          // .tmdl original sin tocar el resto (ver js/tmdl-writer.js).
+          startLine: i,
+          endLine: j - 1,
         });
       } else if (kind === 'hierarchy') {
         for (const l of bodyLines) {

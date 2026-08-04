@@ -8,9 +8,25 @@ window.UEF = window.UEF || {};
 
 UEF.Analyzer = (function () {
 
+  // Lee cada archivo de tabla y devuelve, además del resultado parseado, un
+  // mapa tabla -> {file, relativePath, rawText} para poder ubicar y borrar
+  // el bloque de texto de un elemento más adelante (modo edición).
   async function readTmdlFiles(files) {
     const texts = await Promise.all(files.map(f => f.text()));
-    return texts.map(t => UEF.TmdlParser.parseTable(t));
+    const parsedTables = [];
+    const sourceByTable = new Map();
+    texts.forEach((t, idx) => {
+      const parsed = UEF.TmdlParser.parseTable(t);
+      parsedTables.push(parsed);
+      if (parsed.tableName) {
+        sourceByTable.set(parsed.tableName, {
+          file: files[idx],
+          relativePath: files[idx].relativePath || null,
+          rawText: t,
+        });
+      }
+    });
+    return { parsedTables, sourceByTable };
   }
 
   async function readJsonFiles(fileEntries) {
@@ -27,12 +43,13 @@ UEF.Analyzer = (function () {
   }
 
   async function analyze(semanticModelInput, reportInput) {
-    const parsedTables = await readTmdlFiles(semanticModelInput.tableFiles);
+    const { parsedTables, sourceByTable } = await readTmdlFiles(semanticModelInput.tableFiles);
     const relationshipsText = semanticModelInput.relationshipsFile
       ? await semanticModelInput.relationshipsFile.text()
       : '';
     const relationships = UEF.TmdlParser.parseRelationships(relationshipsText);
-    const model = UEF.ModelBuilder.build(parsedTables, relationships);
+    const model = UEF.ModelBuilder.build(parsedTables, relationships, sourceByTable);
+    model.writable = !!semanticModelInput.writable;
     const graph = UEF.DaxReferences.buildGraph(model);
 
     const usedDirect = new Map(); // id -> Set(contexto)
