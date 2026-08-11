@@ -42,7 +42,11 @@ UEF.Analyzer = (function () {
     return out;
   }
 
-  async function analyze(semanticModelInput, reportInput) {
+  // reportInputs: array de carpetas .Report ya leídas (puede haber más de
+  // una conectada al mismo modelo). Se combina el uso de todas, pero las
+  // páginas se analizan una por una (cada .Report tiene su propio
+  // pages.json) y quedan marcadas con a qué reporte pertenecen.
+  async function analyze(semanticModelInput, reportInputs) {
     const { parsedTables, sourceByTable } = await readTmdlFiles(semanticModelInput.tableFiles);
     const relationshipsText = semanticModelInput.relationshipsFile
       ? await semanticModelInput.relationshipsFile.text()
@@ -59,9 +63,25 @@ UEF.Analyzer = (function () {
       usedDirect.get(id).add(context);
     }
 
-    // 1) Uso en visuales/páginas/filtros/bookmarks del .Report
-    const jsonFiles = await readJsonFiles(reportInput.jsonFiles);
-    const usages = UEF.ReportScanner.scan(jsonFiles);
+    // 1) Uso en visuales/páginas/filtros/bookmarks de cada .Report
+    const validReports = (reportInputs || []).filter(r => r.valid);
+    const multiReport = validReports.length > 1;
+    let usages = [];
+    const pagesCandidates = [];
+    const pagesInUse = [];
+    for (const report of validReports) {
+      const jsonFiles = await readJsonFiles(report.jsonFiles);
+      const reportLabel = multiReport ? report.rootName : null;
+      usages = usages.concat(UEF.ReportScanner.scan(jsonFiles, reportLabel));
+      const pageResult = UEF.PageScanner.analyze(jsonFiles);
+      for (const c of pageResult.candidates) pagesCandidates.push({ ...c, reportInput: report, reportLabel: report.rootName });
+      for (const u of pageResult.inUse) pagesInUse.push({ ...u, reportInput: report, reportLabel: report.rootName });
+    }
+    const pages = {
+      candidates: pagesCandidates,
+      inUse: pagesInUse,
+      writable: validReports.some(r => r.writable),
+    };
     let unresolvedUsages = 0;
     for (const u of usages) {
       const id = UEF.ModelBuilder.resolveColumn(model, u.entity, u.property);
@@ -140,6 +160,7 @@ UEF.Analyzer = (function () {
       alive,
       section1,
       section2,
+      pages,
       unresolvedUsages,
       totalUsages: usages.length,
       summary: {

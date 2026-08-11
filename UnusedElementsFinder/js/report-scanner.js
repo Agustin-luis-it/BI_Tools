@@ -60,8 +60,10 @@ UEF.ReportScanner = (function () {
   }
 
   // files: array de {relativePath, json}
+  // reportLabel (opcional): si se pasa (porque hay más de un .Report
+  // adjuntado), se antepone a cada contexto para saber de qué reporte vino.
   // Devuelve array de {entity, property, context}
-  function scan(files) {
+  function scan(files, reportLabel) {
     const pageDisplayNames = new Map();
     for (const f of files) {
       const norm = f.relativePath.replace(/\\/g, '/');
@@ -73,7 +75,8 @@ UEF.ReportScanner = (function () {
 
     const usages = [];
     for (const f of files) {
-      const context = classifyContext(f.relativePath, f.json, pageDisplayNames);
+      let context = classifyContext(f.relativePath, f.json, pageDisplayNames);
+      if (reportLabel) context = `[${reportLabel}] ${context}`;
       walk(f.json, new Map(), (entity, property) => {
         usages.push({ entity, property, context });
       });

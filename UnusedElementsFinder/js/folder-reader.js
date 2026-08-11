@@ -33,13 +33,18 @@ UEF.FolderReader = (function () {
     };
   }
 
-  async function walkHandle(dirHandle, prefix, out) {
+  // dirsOut (opcional): si se pasa, también junta {handle, relativePath} de
+  // cada subcarpeta recorrida — hace falta para poder borrar carpetas de
+  // página más adelante (hay que llamar removeEntry() desde el handle de su
+  // carpeta padre, no desde la carpeta en sí).
+  async function walkHandle(dirHandle, prefix, filesOut, dirsOut) {
+    if (dirsOut) dirsOut.push({ handle: dirHandle, relativePath: prefix });
     for await (const [name, handle] of dirHandle.entries()) {
       const relativePath = prefix ? `${prefix}/${name}` : name;
       if (handle.kind === 'directory') {
-        await walkHandle(handle, relativePath, out);
+        await walkHandle(handle, relativePath, filesOut, dirsOut);
       } else {
-        out.push({ handle, relativePath });
+        filesOut.push({ handle, relativePath });
       }
     }
   }
@@ -54,7 +59,7 @@ UEF.FolderReader = (function () {
 
   async function readSemanticModelFolderFromHandle(dirHandle) {
     const entries = [];
-    await walkHandle(dirHandle, '', entries);
+    await walkHandle(dirHandle, '', entries, null);
     const tableFiles = entries
       .filter(e => /definition\/tables\/[^/]+\.tmdl$/i.test(e.relativePath))
       .map(wrapFileHandle);
@@ -85,8 +90,41 @@ UEF.FolderReader = (function () {
       rootName,
       jsonFiles,
       valid: hasPages,
+      writable: false,
+      pagesDirHandle: null,
+      pagesJsonFile: null,
     };
   }
 
-  return { readSemanticModelFolder, readSemanticModelFolderFromHandle, readReportFolder };
+  // Versión con permiso de lectura y escritura, necesaria para poder borrar
+  // carpetas de página completas (page.json + sus visuales) y actualizar
+  // pages.json.
+  async function readReportFolderFromHandle(dirHandle) {
+    const files = [];
+    const dirs = [];
+    await walkHandle(dirHandle, '', files, dirs);
+    const jsonFiles = files
+      .filter(e => /definition\/.*\.json$/i.test(e.relativePath))
+      .map(e => ({ file: wrapFileHandle(e), relativePath: e.relativePath }));
+    const rootName = dirHandle.name;
+    const hasPages = jsonFiles.some(f => /pages\/[^/]+\/page\.json$/i.test(f.relativePath));
+    const pagesDirEntry = dirs.find(d => /(^|\/)definition\/pages$/i.test(d.relativePath));
+    const pagesJsonEntry = files.find(e => /definition\/pages\/pages\.json$/i.test(e.relativePath));
+    return {
+      rootName,
+      jsonFiles,
+      valid: hasPages,
+      writable: true,
+      dirHandle,
+      pagesDirHandle: pagesDirEntry ? pagesDirEntry.handle : null,
+      pagesJsonFile: pagesJsonEntry ? wrapFileHandle(pagesJsonEntry) : null,
+    };
+  }
+
+  return {
+    readSemanticModelFolder,
+    readSemanticModelFolderFromHandle,
+    readReportFolder,
+    readReportFolderFromHandle,
+  };
 })();

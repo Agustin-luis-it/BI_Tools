@@ -41,13 +41,17 @@
       <ol>
         <li>Abrí tu proyecto PBIP en el explorador de archivos de Windows. Vas a ver dos carpetas: una que termina en <code>.SemanticModel</code> y otra en <code>.Report</code>.</li>
         <li>Hacé clic en "Elegir carpeta .SemanticModel" y seleccioná esa carpeta completa (no entres a subcarpetas).</li>
-        <li>Hacé clic en "Elegir carpeta .Report" y seleccioná esa carpeta completa.</li>
-        <li>Cuando ambas queden marcadas con ✓, hacé clic en "Analizar".</li>
+        <li>Hacé clic en "Agregar carpeta .Report" y seleccioná esa carpeta completa. Si el mismo modelo semántico alimenta más de un reporte, agregalos todos — el botón queda disponible para seguir sumando, y cada uno se puede cambiar o quitar de la lista por separado. Sin todos los reportes conectados, un campo usado solo en uno que falta va a aparecer como "no usado" por error.</li>
+        <li>Cuando el modelo y al menos un reporte queden marcados con ✓, hacé clic en "Analizar".</li>
         <li>Revisá las dos tablas de resultados. Podés exportarlas a CSV para llevarlas a Excel.</li>
         <li>En cualquiera de las dos secciones podés pasar a modo <strong>✏️ Editar</strong>, tildar los que quieras sacar del modelo y borrarlos directamente de los archivos <code>.tmdl</code>. El navegador te va a pedir permiso de escritura sobre la carpeta al elegirla — sin ese permiso, el botón "Editar" queda deshabilitado y la herramienta solo sirve para ver resultados.</li>
+        <li>Más abajo, en <strong>"Páginas ocultas candidatas a borrar"</strong>, aparecen las páginas ocultas sin ningún motivo detectado para seguir existiendo (las que sí lo tienen — botón, bookmark, Tooltip, Drill through — no se muestran). Borrar una página también requiere el mismo permiso de escritura, esta vez sobre la carpeta <code>.Report</code>.</li>
       </ol>
       <p><strong>Nota:</strong> todo el análisis corre en tu navegador, en tu propia computadora — ningún archivo se envía a ningún servidor. El borrado tampoco: escribe directamente sobre los archivos de la carpeta que elegiste.</p>
-      <p><strong>Sobre el borrado:</strong> si tildás un elemento de la segunda sección, la herramienta agrega automáticamente (sin que lo tildes) todo lo que lo referencia, para no dejar una fórmula rota en el elemento que lo llama — te lo muestra antes de confirmar. Después de cada borrado hay que volver a analizar antes de borrar de nuevo, para que la herramienta relea los archivos actualizados. Tené el proyecto en control de versiones (Git) por las dudas quieras deshacer algo.</p>
+      <p><strong>Sobre el borrado de medidas/columnas:</strong> si tildás un elemento de la segunda sección, la herramienta agrega automáticamente (sin que lo tildes) todo lo que lo referencia, para no dejar una fórmula rota en el elemento que lo llama — te lo muestra antes de confirmar.</p>
+      <p><strong>Sobre el borrado de páginas:</strong> borra la carpeta completa de la página (con todos sus visuales) y actualiza <code>pages.json</code>. Como una página puede tener visuales que usaban medidas o columnas, después de borrar una página te va a aparecer un aviso arriba de "Elementos que no se usan" sugiriendo volver a analizar.</p>
+      <p><strong>En general:</strong> después de cada borrado (de cualquier tipo) hay que volver a analizar antes de borrar de nuevo, para que la herramienta relea los archivos actualizados. Tené el proyecto en control de versiones (Git) por las dudas quieras deshacer algo.</p>
+      <p><strong>Papelera:</strong> cada vez que borrás algo (medidas, columnas o páginas) queda guardado en la papelera de esta sesión, con un botón para restaurarlo. Ojo: vive solo en la memoria de esta pestaña — si la recargás, cerrás, o elegís otra carpeta, se pierde (aunque los archivos en disco no se tocan más allá de lo que ya hayas borrado).</p>
       <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Ya evalúa roles de seguridad (RLS) — una columna usada solo en una regla de RLS cuenta como "en uso" — pero todavía no contempla grupos de cálculo ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
     </div>
   </header>
@@ -64,13 +68,11 @@
       </div>
       <div class="picker-card">
         <span class="picker-step">2</span>
-        <h3>Carpeta .Report</h3>
-        <p class="hint">La carpeta que contiene <code>definition/pages/...</code></p>
-        <label class="file-btn">
-          📁 Elegir carpeta .Report
-          <input type="file" id="reportPicker" webkitdirectory directory multiple>
-        </label>
-        <div id="reportStatus" class="status-line"></div>
+        <h3>Carpeta(s) .Report</h3>
+        <p class="hint">Podés agregar más de un reporte conectado al mismo modelo — el análisis de uso los combina a todos.</p>
+        <button type="button" id="reportPickerBtn" class="file-btn">📁 Agregar carpeta .Report</button>
+        <input type="file" id="reportPickerFallback" webkitdirectory directory multiple style="display:none">
+        <div id="reportList" class="report-list"></div>
       </div>
     </div>
 
@@ -83,9 +85,41 @@
 
   <div id="resultsPanel">
 
+    <div id="trashWidget" style="display:none">
+      <button type="button" id="trashToggleBtn" class="secondary-btn">🗑️ Ver papelera (<span id="trashCount">0</span>)</button>
+      <div id="trashPanel" class="trash-panel" style="display:none">
+        <div class="section-header">
+          <h3 class="subsection-title" style="margin:0;padding:0;border:none;">Papelera de esta sesión</h3>
+          <span class="count-pill" id="trashSummary"></span>
+        </div>
+        <p class="hint">Vive solo en esta pestaña mientras esté abierta — se pierde si recargás la página o cambiás de carpeta. Después de restaurar algo, conviene volver a analizar para verlo reflejado en los resultados.</p>
+        <div class="table-scroll">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Nombre</th>
+                <th>Detalle</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="trashBody"></tbody>
+          </table>
+        </div>
+        <div class="actions-row">
+          <button type="button" id="trashRestoreAllBtn" class="secondary-btn">↩ Restaurar todo</button>
+          <button type="button" id="trashClearBtn" class="secondary-btn">Vaciar papelera</button>
+        </div>
+      </div>
+    </div>
+
     <section class="panel">
       <div class="stats-row" id="summaryStats"></div>
     </section>
+
+    <div id="stalePagesNotice" class="stale-notice" style="display:none">
+      ⚠️ Borraste una o más páginas desde el último análisis — puede haber medidas, columnas o campos que quedaron sin uso real como consecuencia. Apretá <strong>"Analizar"</strong> de nuevo para refrescar estos resultados.
+    </div>
 
     <section class="panel results-section">
       <div class="section-header">
@@ -187,6 +221,44 @@
       </div>
     </section>
 
+    <section class="panel results-section">
+      <div class="section-header">
+        <h2><span class="section-icon">📄</span> Páginas ocultas candidatas a borrar</h2>
+        <span class="count-pill"><strong id="pagesHiddenCount">0</strong> página(s)</span>
+      </div>
+      <p class="section-desc">
+        Páginas marcadas como ocultas (no las páginas visibles — esas son alcanzables con solo hacer
+        clic en su pestaña) sin ningún botón, bookmark u otra referencia que apunte a ellas, y sin
+        estar configuradas como página de Tooltip o de Drill through. Son las candidatas a borrar —
+        las que sí tienen un motivo para seguir existiendo no aparecen acá.
+      </p>
+      <div class="mode-toggle-row">
+        <div class="mode-toggle" role="group" aria-label="Modo de la lista">
+          <button type="button" id="pagesViewModeBtn" class="mode-btn mode-btn-active">👁 Ver</button>
+          <button type="button" id="pagesEditModeBtn" class="mode-btn" disabled title="Elegí la carpeta .Report con permiso de escritura para habilitar esto">✏️ Editar</button>
+        </div>
+        <span id="pagesEditModeHint" class="edit-mode-hint"></span>
+      </div>
+      <div id="pagesDeleteBar" class="delete-bar" style="display:none">
+        <label class="select-all-label"><input type="checkbox" id="pagesSelectAllCheckbox"> Seleccionar todo</label>
+        <button type="button" id="pagesDeleteBtn" class="danger-btn" disabled>🗑 Eliminar seleccionadas (<span id="pagesSelectedCount">0</span>)</button>
+        <span id="pagesDeleteStatus" class="status-line"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th id="pagesCheckHeader" class="check-col" style="display:none"></th>
+              <th>Página</th>
+              <th id="pagesReportHeader" style="display:none">Reporte</th>
+              <th>Nombre interno</th>
+            </tr>
+          </thead>
+          <tbody id="pagesCandidatesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <footer class="note">
       Buscador de Elementos No Usados — análisis local, basado en lectura de texto de archivos TMDL y JSON del formato PBIP.
     </footer>
@@ -199,8 +271,10 @@
 <script src="js/model-builder.js"></script>
 <script src="js/dax-references.js"></script>
 <script src="js/report-scanner.js"></script>
+<script src="js/page-scanner.js"></script>
 <script src="js/folder-reader.js"></script>
 <script src="js/tmdl-writer.js"></script>
+<script src="js/page-writer.js"></script>
 <script src="js/analyzer.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>
