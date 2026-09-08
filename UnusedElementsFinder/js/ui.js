@@ -195,32 +195,43 @@ UEF.UI = (function () {
     });
   }
 
+  // Íconos de línea (sin depender de ninguna librería externa) para las
+  // tarjetas de resumen — heredan el color vía "stroke: currentColor" desde
+  // .stat-icon-badge svg en el CSS.
+  const STAT_ICONS = {
+    total: '<svg viewBox="0 0 20 20"><path d="M10 2.5 2.5 6.5 10 10.5l7.5-4L10 2.5Z"/><path d="M2.5 10 10 14l7.5-4"/><path d="M2.5 13.5 10 17.5l7.5-4"/></svg>',
+    used: '<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.3"/><path d="M6.5 10.3l2.3 2.3 4.7-5"/></svg>',
+    unused: '<svg viewBox="0 0 20 20"><path d="M4 6h12"/><path d="M8 6V4.3c0-.4.3-.7.7-.7h2.6c.4 0 .7.3.7.7V6"/><path d="M5.6 6l.6 9.2c0 .4.4.7.8.7h6c.4 0 .8-.3.8-.7l.6-9.2"/><path d="M8.3 9v4.2"/><path d="M11.7 9v4.2"/></svg>',
+    linked: '<svg viewBox="0 0 20 20"><path d="M8.3 11.7 11.7 8.3"/><path d="M9 6.4l1-1a3 3 0 0 1 4.3 4.3l-1 1"/><path d="M11 13.6l-1 1a3 3 0 0 1-4.3-4.3l1-1"/></svg>',
+    percent: '<svg viewBox="0 0 20 20"><circle cx="6" cy="6" r="1.9"/><circle cx="14" cy="14" r="1.9"/><path d="M15 5 5 15"/></svg>',
+  };
+
   function renderSummary(result) {
     const s = result.summary;
     const pctUnused = s.total ? Math.round(((s.unusedSection1 + s.unusedSection2) / s.total) * 100) : 0;
     $('#summaryStats').innerHTML = `
       <div class="stat-tile">
-        <div class="stat-icon">📦</div>
+        <div class="stat-icon-badge">${STAT_ICONS.total}</div>
         <div class="stat-value">${s.total}</div>
         <div class="stat-label">Elementos totales</div>
       </div>
       <div class="stat-tile stat-ok">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon-badge">${STAT_ICONS.used}</div>
         <div class="stat-value">${s.used}</div>
         <div class="stat-label">En uso</div>
       </div>
       <div class="stat-tile stat-warn">
-        <div class="stat-icon">🧹</div>
+        <div class="stat-icon-badge">${STAT_ICONS.unused}</div>
         <div class="stat-value">${s.unusedSection1}</div>
         <div class="stat-label">No se usan</div>
       </div>
       <div class="stat-tile stat-warn">
-        <div class="stat-icon">🔗</div>
+        <div class="stat-icon-badge">${STAT_ICONS.linked}</div>
         <div class="stat-value">${s.unusedSection2}</div>
         <div class="stat-label">Referenciados en elementos no usados</div>
       </div>
       <div class="stat-tile">
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon-badge">${STAT_ICONS.percent}</div>
         <div class="stat-value">${pctUnused}%</div>
         <div class="stat-label">Del modelo es candidato a revisión</div>
       </div>
