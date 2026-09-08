@@ -233,7 +233,13 @@ UEF.UI = (function () {
     const el = item.element;
     const hasExpr = !!el.expression;
     const referencedByHtml = withReferencedBy
-      ? `<td>${item.referencedBy.map(r => `${escapeHtml(r.table)}.${escapeHtml(r.name)} <span class="kind-tag kind-${r.kind}">${KIND_LABEL[r.kind]}</span>`).join('<br>')}</td>`
+      ? `<td>${item.referencedBy.map(r => {
+          // Las medidas viven en una tabla especial ("Measure") que no
+          // aporta nada — la etiqueta de al lado ya dice "Medida". Para
+          // columnas sí conviene mostrar de qué tabla vienen.
+          const label = r.kind === 'measure' ? escapeHtml(r.name) : `${escapeHtml(r.table)}.${escapeHtml(r.name)}`;
+          return `${label} <span class="kind-tag kind-${r.kind}">${KIND_LABEL[r.kind]}</span>`;
+        }).join('<br>')}</td>`
       : '';
     const checkboxHtml = checkboxSectionKey
       ? `<td class="check-col"><input type="checkbox" class="row-check" data-section="${checkboxSectionKey}" data-id="${escapeHtml(el.id)}"${selectedIds[checkboxSectionKey].has(el.id) ? ' checked' : ''}></td>`

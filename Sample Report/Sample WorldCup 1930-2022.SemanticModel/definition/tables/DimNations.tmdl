@@ -75,6 +75,14 @@ table DimNations
 
 		annotation SummarizationSetBy = Automatic
 
+	column 'Columna de prueba' = 1.5
+		lineageTag: ebd0016f-cb3b-4722-b3d2-ccad089d8fd6
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
 	partition DimNations = m
 		mode: import
 		source =

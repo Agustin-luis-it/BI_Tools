@@ -934,6 +934,13 @@ table Measure
 		displayFolder: _world_cup_metrics
 		lineageTag: 7194423b-da22-4cf1-8ec5-0c2bef2700f5
 
+	column _
+		isHidden
+		lineageTag: 6142f916-1957-4c71-82bd-3124b2cd6c47
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [_]
+
 	measure 'Medida de prueba' = 1
 		formatString: 0
 		lineageTag: 64aa26ad-bd55-44b8-9113-f2150b0824a2
@@ -941,13 +948,6 @@ table Measure
 	measure 'Medida de prueba 2' = [Medida de prueba] + 1
 		formatString: 0
 		lineageTag: a8308086-aa8b-4807-849d-2614b63636d8
-
-	column _
-		isHidden
-		lineageTag: 6142f916-1957-4c71-82bd-3124b2cd6c47
-		summarizeBy: none
-		isNameInferred
-		sourceColumn: [_]
 
 	partition Measure = calculated
 		mode: import
