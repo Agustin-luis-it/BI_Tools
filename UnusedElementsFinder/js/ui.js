@@ -54,8 +54,9 @@ UEF.UI = (function () {
   }
 
   function reportEntryNote(r) {
-    if (!r.valid) return 'no parece una carpeta .Report válida (no se encontraron páginas en definition/pages)';
+    if (!r.valid) return 'no parece una carpeta .Report válida (no se encontraron páginas en definition/pages ni un report.json)';
     const modeNote = r.writable ? '✏️ modo edición de páginas disponible' : 'solo lectura (sin borrado de páginas)';
+    if (r.format === 'legacy') return `formato clásico (legacy) · ${modeNote}`;
     return `${r.jsonFiles.length} archivo(s) JSON · ${modeNote}`;
   }
 
@@ -547,20 +548,25 @@ UEF.UI = (function () {
     let totalDeleted = 0;
     let lastError = null;
     for (const [reportInputForGroup, pagesInGroup] of byReport) {
+      const isLegacy = reportInputForGroup.format === 'legacy';
       try {
         const ids = pagesInGroup.map(p => p.name);
-        const result = await UEF.PageWriter.deletePages(ids, reportInputForGroup);
+        const result = isLegacy
+          ? await UEF.LegacyReportAdapter.deleteSections(ids, reportInputForGroup)
+          : await UEF.PageWriter.deletePages(ids, reportInputForGroup);
         totalDeleted += result.deletedCount;
         const originalByName = new Map(pagesInGroup.map(p => [p.name, p]));
         trash.unshift(...result.snapshots.map(s => ({
           trashId: newTrashId(),
           type: 'page',
+          format: isLegacy ? 'legacy' : 'modern',
           restored: false,
-          pageName: s.pageName,
-          displayName: (originalByName.get(s.pageName) || {}).displayName || s.pageName,
-          originalPage: originalByName.get(s.pageName) || null,
+          pageName: isLegacy ? s.sectionName : s.pageName,
+          displayName: (originalByName.get(isLegacy ? s.sectionName : s.pageName) || {}).displayName || (isLegacy ? s.sectionName : s.pageName),
+          originalPage: originalByName.get(isLegacy ? s.sectionName : s.pageName) || null,
           reportInput: reportInputForGroup,
           files: s.files,
+          section: s.section,
           originalIndex: s.originalIndex,
         })));
         const deletedSet = new Set(ids);
@@ -637,8 +643,10 @@ UEF.UI = (function () {
       const typeLabel = isPage ? TRASH_TYPE_LABEL.page : TRASH_TYPE_LABEL[t.kind];
       const kindClass = isPage ? 'kind-column' : `kind-${t.kind}`;
       const name = isPage ? t.displayName : `${t.table}.${t.name}`;
+      const pageDetail = t.format === 'legacy' ? '1 sección' : `${(t.files || []).length} archivo(s)`;
+      const showReportName = reportInputs.filter(r => r.valid).length > 1;
       const detail = isPage
-        ? `${t.files.length} archivo(s)${t.reportInput && t.reportInput.rootName ? ' · ' + t.reportInput.rootName : ''}`
+        ? `${pageDetail}${showReportName && t.reportInput && t.reportInput.rootName ? ' · ' + t.reportInput.rootName : ''}`
         : t.table;
       return `
         <tr>
@@ -678,7 +686,11 @@ UEF.UI = (function () {
         }
         renderSummary(lastResult);
       } else {
-        await UEF.PageWriter.restorePage(entry, entry.reportInput);
+        if (entry.format === 'legacy') {
+          await UEF.LegacyReportAdapter.restoreSection(entry, entry.reportInput);
+        } else {
+          await UEF.PageWriter.restorePage(entry, entry.reportInput);
+        }
         entry.restored = true;
         if (entry.originalPage) {
           lastResult.pages.candidates.push(entry.originalPage);

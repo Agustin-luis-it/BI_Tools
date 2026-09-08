@@ -79,17 +79,26 @@ UEF.FolderReader = (function () {
     };
   }
 
+  // Además del formato moderno (PBIR: definition/pages/<id>/page.json, un
+  // archivo por página/visual), soportamos el formato clásico de .Report:
+  // un solo report.json enorme en la raíz de la carpeta, con las páginas
+  // ("sections") y visuales ("visualContainers") adentro, y varios de sus
+  // campos (config/filters/query) guardados como texto JSON dentro de un
+  // string en vez de JSON anidado de verdad. Ver js/legacy-report-adapter.js.
   function readReportFolder(fileList) {
     const files = Array.from(fileList);
-    const jsonFiles = files
-      .filter(f => /definition\/.*\.json$/i.test(relPath(f)))
-      .map(f => ({ file: f, relativePath: relPath(f).replace(/^[^/]+\//, '') }));
+    const allEntries = files.map(f => ({ file: f, relativePath: relPath(f).replace(/^[^/]+\//, '') }));
+    const jsonFiles = allEntries.filter(f => /definition\/.*\.json$/i.test(f.relativePath));
     const rootName = files.length ? relPath(files[0]).split('/')[0] : '';
     const hasPages = jsonFiles.some(f => /pages\/[^/]+\/page\.json$/i.test(f.relativePath));
+    const legacyEntry = allEntries.find(f => /^report\.json$/i.test(f.relativePath));
+    const format = hasPages ? 'modern' : (legacyEntry ? 'legacy' : 'unknown');
     return {
       rootName,
+      format,
       jsonFiles,
-      valid: hasPages,
+      legacyReportFile: legacyEntry ? legacyEntry.file : null,
+      valid: hasPages || !!legacyEntry,
       writable: false,
       pagesDirHandle: null,
       pagesJsonFile: null,
@@ -98,7 +107,7 @@ UEF.FolderReader = (function () {
 
   // Versión con permiso de lectura y escritura, necesaria para poder borrar
   // carpetas de página completas (page.json + sus visuales) y actualizar
-  // pages.json.
+  // pages.json — o, en formato clásico, reescribir el report.json único.
   async function readReportFolderFromHandle(dirHandle) {
     const files = [];
     const dirs = [];
@@ -110,10 +119,14 @@ UEF.FolderReader = (function () {
     const hasPages = jsonFiles.some(f => /pages\/[^/]+\/page\.json$/i.test(f.relativePath));
     const pagesDirEntry = dirs.find(d => /(^|\/)definition\/pages$/i.test(d.relativePath));
     const pagesJsonEntry = files.find(e => /definition\/pages\/pages\.json$/i.test(e.relativePath));
+    const legacyEntry = files.find(e => /^report\.json$/i.test(e.relativePath));
+    const format = hasPages ? 'modern' : (legacyEntry ? 'legacy' : 'unknown');
     return {
       rootName,
+      format,
       jsonFiles,
-      valid: hasPages,
+      legacyReportFile: legacyEntry ? wrapFileHandle(legacyEntry) : null,
+      valid: hasPages || !!legacyEntry,
       writable: true,
       dirHandle,
       pagesDirHandle: pagesDirEntry ? pagesDirEntry.handle : null,

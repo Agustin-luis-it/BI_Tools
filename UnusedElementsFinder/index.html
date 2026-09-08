@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buscador de Elementos No Usados — Power BI</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2026%2026'%3E%3Crect%20x='3'%20y='14'%20width='4'%20height='9'%20rx='1.2'%20fill='%23DA291C'%20opacity='0.55'/%3E%3Crect%20x='11'%20y='8'%20width='4'%20height='15'%20rx='1.2'%20fill='%23DA291C'%20opacity='0.8'/%3E%3Crect%20x='19'%20y='3'%20width='4'%20height='20'%20rx='1.2'%20fill='%23DA291C'/%3E%3Ccircle%20cx='20.5'%20cy='5.5'%20r='4.2'%20fill='none'%20stroke='white'%20stroke-width='1.6'/%3E%3Ccircle%20cx='20.5'%20cy='5.5'%20r='4.2'%20fill='none'%20stroke='%23DA291C'%20stroke-width='1.4'%20opacity='0.9'/%3E%3Cline%20x1='23.3'%20y1='8.3'%20x2='25.5'%20y2='10.5'%20stroke='%23DA291C'%20stroke-width='1.6'%20stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -52,6 +53,7 @@
       <p><strong>Sobre el borrado de páginas:</strong> borra la carpeta completa de la página (con todos sus visuales) y actualiza <code>pages.json</code>. Como una página puede tener visuales que usaban medidas o columnas, después de borrar una página te va a aparecer un aviso arriba de "Elementos que no se usan" sugiriendo volver a analizar.</p>
       <p><strong>En general:</strong> después de cada borrado (de cualquier tipo) hay que volver a analizar antes de borrar de nuevo, para que la herramienta relea los archivos actualizados. Tené el proyecto en control de versiones (Git) por las dudas quieras deshacer algo.</p>
       <p><strong>Papelera:</strong> cada vez que borrás algo (medidas, columnas o páginas) queda guardado en la papelera de esta sesión, con un botón para restaurarlo. Ojo: vive solo en la memoria de esta pestaña — si la recargás, cerrás, o elegís otra carpeta, se pierde (aunque los archivos en disco no se tocan más allá de lo que ya hayas borrado).</p>
+      <p><strong>Formato clásico de .Report:</strong> además del formato moderno (un archivo por página/visual), soporta el formato clásico de reportes viejos, donde todo el reporte vive en un único <code>report.json</code>. Se detecta solo. Ojo: esto se armó a partir del esquema documentado de ese formato, sin un archivo real para probarlo — el escaneo de campos usados reutiliza el mismo buscador genérico que en el formato moderno, así que debería ser confiable, pero <strong>no podemos confirmar con certeza si una página oculta está marcada como Tooltip o Drill through</strong> en este formato (si no encuentra el motivo, puede aparecer como candidata a borrar aunque no lo sea). Para páginas ocultas en reportes de formato clásico, revisá manualmente en Power BI Desktop antes de borrar.</p>
       <p><strong>Limitaciones conocidas:</strong> el análisis de dependencias DAX es por texto (busca <code>Tabla[Columna]</code> y <code>[Medida]</code> dentro de las fórmulas), no un parser DAX completo. Ya evalúa roles de seguridad (RLS) — una columna usada solo en una regla de RLS cuenta como "en uso" — pero todavía no contempla grupos de cálculo ni parámetros "What-if". Antes de borrar algo, revisá el resultado con criterio.</p>
     </div>
   </header>
@@ -272,6 +274,7 @@
 <script src="js/dax-references.js"></script>
 <script src="js/report-scanner.js"></script>
 <script src="js/page-scanner.js"></script>
+<script src="js/legacy-report-adapter.js"></script>
 <script src="js/folder-reader.js"></script>
 <script src="js/tmdl-writer.js"></script>
 <script src="js/page-writer.js"></script>

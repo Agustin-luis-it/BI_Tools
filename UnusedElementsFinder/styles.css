@@ -588,6 +588,7 @@ section.results-section { margin-bottom: 30px; }
 }
 .trash-panel .actions-row { margin-top: 14px; }
 .trash-panel .table-scroll { max-height: none; overflow: visible; }
+.trash-panel table.results-table { min-width: 0; table-layout: auto; }
 
 @media (max-width: 560px) {
   #trashWidget { top: 10px; right: 10px; }

@@ -70,7 +70,13 @@ UEF.Analyzer = (function () {
     const pagesCandidates = [];
     const pagesInUse = [];
     for (const report of validReports) {
-      const jsonFiles = await readJsonFiles(report.jsonFiles);
+      // Formato clásico (un solo report.json con "sections"/
+      // "visualContainers", campos serializados como string): lo adaptamos
+      // a la misma forma de pseudo-archivos que usa el formato moderno, y
+      // de ahí en más el resto del pipeline no necesita saber la diferencia.
+      const jsonFiles = report.format === 'legacy'
+        ? (await UEF.LegacyReportAdapter.readAndUnpack(report)).jsonFiles
+        : await readJsonFiles(report.jsonFiles);
       const reportLabel = multiReport ? report.rootName : null;
       usages = usages.concat(UEF.ReportScanner.scan(jsonFiles, reportLabel));
       const pageResult = UEF.PageScanner.analyze(jsonFiles);

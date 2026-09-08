@@ -9,7 +9,8 @@
       "PowerShell($found = Get-Command node -ErrorAction SilentlyContinue; if \\($found\\) { $found.Source } else { Get-ChildItem -Path \"C:\\\\Program Files\",\"C:\\\\Program Files \\(x86\\)\",\"$env:LOCALAPPDATA\",\"$env:USERPROFILE\" -Recurse -Filter \"node.exe\" -ErrorAction SilentlyContinue -Force | Select-Object -First 5 -ExpandProperty FullName })",
       "Bash(command -v powershell.exe)",
       "Read(//c/Program Files \\\\\\(x86\\\\\\)/Microsoft/Edge/Application//**)",
-      "Read(//c/Program Files/Microsoft/Edge/**)"
+      "Read(//c/Program Files/Microsoft/Edge/**)",
+      "PowerShell(& \"C:\\\\Users\\\\luisa\\\\OneDrive\\\\Escritorio\\\\BI_Tools\\\\run.bat\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\luisa\\OneDrive\\Escritorio\\BI_Tools\\UnusedElementsFinder",
